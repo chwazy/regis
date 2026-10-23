@@ -6,7 +6,6 @@
   "packages": {
     ".": {
       "package-name": "regis",
-      "release-as": "0.1.0",
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
         { "type": "json", "path": "apps/desktop/src-tauri/tauri.conf.json", "jsonpath": "$.version" },
