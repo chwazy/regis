@@ -1,0 +1,50 @@
+{
+  "_meta": {
+    "source": "ms365",
+    "tool": "list-mail-folder-messages",
+    "synthetic": true,
+    "note": "Synthetic body of a list-mail-folder-messages result (Microsoft Graph message resources), written from the tool schema; no real mailbox involved."
+  },
+  "value": [
+    {
+      "id": "AAMkSYNTHETIC0001",
+      "subject": "Weekly planning",
+      "bodyPreview": "Hello, here is the planning for next week. Please review the attached draft.",
+      "receivedDateTime": "2026-10-20T07:15:30Z",
+      "lastModifiedDateTime": "2026-10-20T07:16:02Z",
+      "isRead": false,
+      "importance": "normal",
+      "webLink": "https://outlook.example.test/owa/?ItemID=AAMkSYNTHETIC0001",
+      "conversationId": "AAQkSYNTHETICCONV01",
+      "from": { "emailAddress": { "name": "Alice Example", "address": "alice@example.test" } },
+      "toRecipients": [{ "emailAddress": { "name": "Régis User", "address": "regis.user@example.test" } }],
+      "ccRecipients": [{ "emailAddress": { "name": "Bob Example", "address": "bob@example.test" } }]
+    },
+    {
+      "id": "AAMkSYNTHETIC0002",
+      "subject": "Invoice 2026-0042",
+      "bodyPreview": "Please find the invoice for October.",
+      "receivedDateTime": "2026-10-19T16:02:11.0000000Z",
+      "lastModifiedDateTime": "2026-10-19T16:02:11Z",
+      "isRead": true,
+      "importance": "high",
+      "webLink": "https://outlook.example.test/owa/?ItemID=AAMkSYNTHETIC0002",
+      "conversationId": "AAQkSYNTHETICCONV02",
+      "from": { "emailAddress": { "name": "Accounting Example", "address": "accounting@example.test" } },
+      "toRecipients": [{ "emailAddress": { "name": "Régis User", "address": "regis.user@example.test" } }],
+      "ccRecipients": []
+    },
+    {
+      "id": "AAMkSYNTHETIC0003",
+      "subject": "",
+      "bodyPreview": "",
+      "receivedDateTime": "2026-10-18T09:00:00Z",
+      "isRead": true,
+      "importance": "low",
+      "webLink": "https://outlook.example.test/owa/?ItemID=AAMkSYNTHETIC0003",
+      "conversationId": "AAQkSYNTHETICCONV03",
+      "from": { "emailAddress": { "address": "noreply@example.test" } },
+      "toRecipients": [{ "emailAddress": { "name": "Régis User", "address": "regis.user@example.test" } }]
+    }
+  ]
+}

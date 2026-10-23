@@ -1,0 +1,14 @@
+* text=auto eol=lf
+*.sql text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.rs text eol=lf
+*.woff2 binary
+*.png binary
+*.ico binary
+*.icns binary
+tests/fake-bins/claude text eol=lf
+*.cmd text eol=crlf
+tests/fixtures/** text eol=lf
+*.wav binary
+tests/fixtures/audio/*.wav binary

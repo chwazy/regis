@@ -1,0 +1,14 @@
+[package]
+name = "regis-stt-whisper"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[features]
+# GPU Vulkan pour whisper.cpp (désactivée par défaut).
+vulkan = ["whisper-rs/vulkan"]
+
+[dependencies]
+regis-core = { workspace = true }
+whisper-rs = "0.16.0"

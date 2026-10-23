@@ -1,0 +1,220 @@
+.panel {
+  min-height: 0;
+  box-sizing: border-box;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  display: flex;
+  flex-direction: column;
+}
+
+.expanded {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  height: auto;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+.expanded .log,
+.expanded .form {
+  width: min(860px, 100%);
+  box-sizing: border-box;
+  align-self: center;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 12px 12px 18px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.agent {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.expand {
+  composes: iconButton from '../components/ui/controls.module.css';
+}
+
+.title + .expand {
+  margin-left: auto;
+}
+
+.log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  line-height: 1.55;
+}
+
+.message {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.user {
+  align-self: flex-end;
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 14px 14px 4px 14px;
+  background: var(--accent);
+  color: var(--surface);
+}
+
+.assistant {
+  align-self: flex-start;
+  max-width: 92%;
+}
+
+.subJobItem {
+  align-self: stretch;
+  max-width: 92%;
+}
+
+.subJob {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border-radius: var(--radius-inner);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.subJobHead {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.subJobTitle {
+  font-weight: 500;
+}
+
+.subJobStatus {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  flex: none;
+}
+
+.subJobOpen {
+  composes: link from '../components/ui/controls.module.css';
+  font-size: 12px;
+}
+
+.subJobSummary {
+  font-size: 13px;
+  color: var(--text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.progress {
+  position: relative;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.progress::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 35%;
+  border-radius: 2px;
+  background: var(--accent);
+  animation: progress 1.4s ease-in-out infinite;
+}
+
+@keyframes progress {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(290%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress::after {
+    animation: none;
+    width: 100%;
+    opacity: 0.4;
+  }
+}
+
+.hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.error {
+  margin: 0 18px 8px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.input {
+  composes: textarea from '../components/ui/controls.module.css';
+  resize: none;
+  padding: 10px 12px;
+}
+
+/* Même disposition que les notes rapides du Cerveau : raccourci à gauche, dictée et envoi à droite. */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.actions > .hint {
+  margin-right: auto;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.dictation button {
+  width: 32px;
+  height: 32px;
+}
+
+.input:focus {
+  border-color: var(--accent);
+}
+
+.dictation {
+  display: contents;
+}

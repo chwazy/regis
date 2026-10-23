@@ -1,0 +1,20 @@
+{
+  "_meta": {
+    "source": "claude-cli",
+    "version": "2.1.306",
+    "synthetic": false,
+    "event": "Notification",
+    "note": "Payload delivered on stdin to a command hook when the interactive session asks for a tool permission (--permission-mode default). Paths scrubbed.",
+    "mcpToolHookInput": { "jobId": "<JOB>", "event": "Notification", "message": "${message}" },
+    "mcpToolHookReceived": { "jobId": "<JOB>", "event": "Notification", "message": "Claude needs your permission" }
+  },
+  "payload": {
+    "session_id": "00000000-0000-4000-8000-000000000003",
+    "transcript_path": "<HOME>/.claude/projects/<WORKSPACE-SLUG>/00000000-0000-4000-8000-000000000003.jsonl",
+    "cwd": "<WORKSPACE>",
+    "prompt_id": "00000000-0000-4000-8000-000000000004",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission",
+    "notification_type": "permission_prompt"
+  }
+}

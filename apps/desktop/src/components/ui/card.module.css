@@ -1,0 +1,110 @@
+.card {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.padded {
+  composes: card;
+  padding: 20px;
+}
+
+.head {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.count {
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--bg);
+  color: var(--text-soft);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.aside {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.empty {
+  margin: 0;
+  padding: 16px 20px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.foot {
+  padding: 10px 20px;
+  border-top: 1px solid var(--border-soft);
+}
+
+/* En-tête repliable : tout l'en-tête est cliquable, les autres boutons restent au-dessus. */
+
+.toggleHead {
+  composes: head;
+  cursor: pointer;
+}
+
+.toggleHead .right > :not(.collapse) {
+  position: relative;
+  z-index: 1;
+}
+
+.collapse {
+  composes: iconButton from './controls.module.css';
+}
+
+.collapse::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+}
+
+.toggleHead:hover .collapse {
+  border-color: var(--border-strong);
+  color: var(--accent-hover);
+}
+
+.chevron {
+  transition: transform 0.15s ease;
+}
+
+.chevronCollapsed {
+  composes: chevron;
+  transform: rotate(-90deg);
+}
+
+.card:has(> [data-collapsed]) .toggleHead {
+  border-bottom-color: transparent;
+}
+
+.card:has(> [data-collapsed]) .collapse::after {
+  border-radius: var(--radius-card);
+}
+
+[data-collapsed] {
+  display: none;
+}

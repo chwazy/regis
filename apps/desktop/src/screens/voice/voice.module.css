@@ -1,0 +1,85 @@
+.card {
+  composes: padded from '../../components/ui/card.module.css';
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.title {
+  composes: title from '../../components/ui/card.module.css';
+}
+
+.hint {
+  composes: hint from '../../components/ui/controls.module.css';
+  margin: 0;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+.state {
+  font-weight: 500;
+}
+
+.size {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.progress {
+  flex: 1 1 200px;
+  height: 8px;
+  accent-color: var(--accent);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 260px;
+}
+
+.label {
+  composes: label from '../../components/ui/controls.module.css';
+}
+
+.select {
+  composes: select from '../../components/ui/controls.module.css';
+}
+
+.primaryButton {
+  composes: primary from '../../components/ui/controls.module.css';
+}
+
+.secondaryButton {
+  composes: secondary from '../../components/ui/controls.module.css';
+}
+
+.meter {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 40px;
+  flex: 1 1 200px;
+  padding: 4px;
+  background: var(--border-soft);
+  border-radius: var(--radius-ctl);
+}
+
+.bar {
+  flex: 1 1 0;
+  min-width: 2px;
+  background: var(--ok);
+  border-radius: 2px;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}

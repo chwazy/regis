@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "source": "claude-cli",
+    "toolVersion": "2.1.306 (Claude Code)",
+    "capturedAt": "2026-10-21T21:26:54.112Z",
+    "command": "claude -p \"Use the filesystem MCP tool write_file to create out.txt in the allowed directory with the content 'ok'. Answer in English in one short sentence.\" --output-format stream-json --verbose --setting-sources project --strict-mcp-config --disable-slash-commands --no-session-persistence --model haiku --permission-prompt-tool mcp__regis-test__approve --mcp-config <mcp-config.json>",
+    "synthetic": false
+  },
+  "request": {
+    "tool_name": "mcp__filesystem__write_file",
+    "input": {
+      "path": "<WORKSPACE>/out.txt",
+      "content": "ok"
+    },
+    "tool_use_id": "toolu_01CyuVtmtHdJ8F4EzmjPNfdB"
+  },
+  "allowResponse": {
+    "behavior": "allow"
+  },
+  "denyResponse": {
+    "behavior": "deny",
+    "message": "Denied by the regis-test permission server."
+  },
+  "allRequestsSeen": [
+    {
+      "tool_name": "mcp__filesystem__list_allowed_directories",
+      "input": {},
+      "tool_use_id": "toolu_01Hw8tPJPrgXqkk3p7A5Zyby"
+    },
+    {
+      "tool_name": "mcp__filesystem__write_file",
+      "input": {
+        "path": "<WORKSPACE>/out.txt",
+        "content": "ok"
+      },
+      "tool_use_id": "toolu_01CyuVtmtHdJ8F4EzmjPNfdB"
+    }
+  ]
+}

@@ -1,0 +1,171 @@
+.mono {
+  font-family: var(--font-mono);
+}
+
+.live {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.gauges {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gauge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.gaugeLabel {
+  width: 90px;
+}
+
+.gaugeTrack {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border-soft);
+  overflow: hidden;
+}
+
+.gaugeFill {
+  height: 100%;
+  background: var(--ok);
+  transition: width 0.1s linear;
+}
+
+.backlog {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--warn);
+}
+
+.tip {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.segments {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  min-height: 120px;
+}
+
+.turn {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 64px 100px minmax(0, 1fr);
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.time {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  padding-top: 2px;
+}
+
+.speaker,
+.speakerMe {
+  font-weight: 600;
+}
+
+.speaker {
+  color: var(--text-soft);
+}
+
+.speakerMe {
+  color: var(--accent);
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.confirm {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.muted {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.warning {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: var(--radius-ctl);
+  background: var(--warn-soft);
+  color: var(--warn);
+  font-size: 13px;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+.minutes {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.minutesActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.badge {
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: var(--radius-ctl);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.minutesBody {
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}

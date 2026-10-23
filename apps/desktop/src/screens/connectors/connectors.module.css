@@ -1,0 +1,362 @@
+.layout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 24px;
+}
+
+.listColumn {
+  flex: 999 1 560px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.empty {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.card {
+  text-align: left;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.card:hover {
+  border-color: var(--border-strong);
+}
+
+.cardSelected {
+  composes: card;
+  border-color: var(--accent-soft);
+  background: var(--accent-soft);
+}
+
+.cardSelected:hover {
+  border-color: var(--accent-soft);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.initials {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: var(--radius-inner);
+  background: var(--border-soft);
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.cardName {
+  font-weight: 600;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.addPanel {
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.addTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.ways {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.way {
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-inner);
+  padding: 14px;
+  background: var(--surface);
+  font: inherit;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wayActive {
+  composes: way;
+  border-color: var(--accent-soft);
+  background: var(--accent-soft);
+}
+
+.wayDisabled {
+  composes: way;
+  cursor: not-allowed;
+  border-style: dashed;
+  color: var(--text-muted);
+  background: var(--surface-muted);
+  opacity: 0.7;
+}
+
+.wayTitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.wayDescription {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  composes: label from '../../components/ui/controls.module.css';
+}
+
+.input {
+  composes: input from '../../components/ui/controls.module.css';
+}
+
+.textarea {
+  composes: textarea from '../../components/ui/controls.module.css';
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.formRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.formRow > * {
+  flex: 1 1 200px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.detail {
+  flex: 1 1 380px;
+  box-sizing: border-box;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.detailHead {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detailCaption {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.detailTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detailTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.detailMono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  word-break: break-all;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: baseline;
+}
+
+.sectionLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-soft);
+}
+
+.sectionLink {
+  margin-left: auto;
+  font-size: 12px;
+}
+
+.configList {
+  margin: 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 16px;
+  font-size: 13px;
+}
+
+.configList dt {
+  color: var(--text-muted);
+}
+
+.configList dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.toolRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 0;
+  border-top: 1px solid var(--border-soft);
+}
+
+.toolName {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.journal {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--bg);
+  border-radius: var(--radius-ctl);
+  padding: 10px 12px;
+  line-height: 1.6;
+}
+
+.testResult {
+  margin: 0;
+  font-size: 13px;
+}
+
+.testOk {
+  composes: testResult;
+  color: var(--ok);
+}
+
+.testFailed {
+  composes: testResult;
+  color: var(--danger);
+}
+
+.detailActions {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.configRow {
+  display: contents;
+}
+
+.wizardCode {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-soft);
+  background: var(--accent-soft);
+  border-radius: var(--radius-ctl);
+  padding: 10px 12px;
+}
+
+.userCode {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  user-select: all;
+}

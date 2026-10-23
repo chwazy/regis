@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Windows : la plateforme cible (WASAPI, NSIS, coffre Windows). Les runners
+# Windows fournissent CMake et LLVM, requis par whisper-rs.
+jobs:
+  node:
+    name: TypeScript (typecheck, lint, tests)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npx eslint .
+      - run: npx prettier --check .
+      - run: npx vitest run
+
+  rust:
+    name: Rust (fmt, clippy, tests)
+    runs-on: windows-latest
+    env:
+      CARGO_TERM_COLOR: always
+      LIBCLANG_PATH: C:\Program Files\LLVM\bin
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Les tests de supervision du sidecar lancent `node`.
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal --component clippy,rustfmt
+          rustup default stable
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          workspaces: apps/desktop/src-tauri
+      - run: cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all --check
+      - run: cargo clippy --manifest-path apps/desktop/src-tauri/Cargo.toml --workspace --all-targets --locked -- -D warnings
+      - run: cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml --workspace --locked
+      # `cargo test` régénère les types ts-rs : ils doivent être commités à jour.
+      - name: Generated TypeScript types are up to date
+        run: git diff --exit-code -- packages/shared/src/generated

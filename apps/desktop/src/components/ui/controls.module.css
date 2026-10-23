@@ -1,0 +1,229 @@
+/*
+ * Contrôles partagés. Les modules d'écran les réutilisent par `composes: x from
+ * '…/components/ui/controls.module.css'` au lieu de redéfinir hauteurs et couleurs.
+ */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-ctl);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--text-muted);
+  color: var(--text);
+}
+
+.button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.primary {
+  composes: button;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--surface);
+}
+
+.primary:hover:not(:disabled) {
+  border-color: var(--accent-hover);
+  background: var(--accent-hover);
+  color: var(--surface);
+}
+
+.secondary {
+  composes: button;
+}
+
+.ghost {
+  composes: button;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-soft);
+}
+
+.ghost:hover:not(:disabled) {
+  border-color: var(--border);
+  background: var(--bg);
+}
+
+.danger {
+  composes: button;
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.danger:hover:not(:disabled) {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.dangerSolid {
+  composes: button;
+  border-color: var(--danger);
+  background: var(--danger);
+  color: var(--surface);
+}
+
+.dangerSolid:hover:not(:disabled) {
+  border-color: var(--danger);
+  background: var(--danger);
+  color: var(--surface);
+  filter: brightness(0.92);
+}
+
+.sm {
+  height: 30px;
+  padding: 0 10px;
+  font-size: 12.5px;
+}
+
+.primarySm {
+  composes: primary sm;
+}
+
+.secondarySm {
+  composes: secondary sm;
+}
+
+.ghostSm {
+  composes: ghost sm;
+}
+
+.dangerSm {
+  composes: danger sm;
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--accent);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.link:hover {
+  color: var(--accent-hover);
+}
+
+.iconButton {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-ctl);
+  background: transparent;
+  color: var(--text-soft);
+  font: inherit;
+  cursor: pointer;
+}
+
+.iconButton:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  color: var(--accent-hover);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-soft);
+  font: inherit;
+  font-size: 12.5px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.chip:hover {
+  border-color: var(--border-strong);
+}
+
+.chipOn {
+  composes: chip;
+  border-color: var(--accent-soft);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.chipOn:hover {
+  border-color: var(--accent-soft);
+}
+
+.input {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ctl);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+.monoInput {
+  composes: input;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.select {
+  composes: input;
+  padding-right: 8px;
+}
+
+.textarea {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ctl);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-soft);
+}
+
+.hint {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}

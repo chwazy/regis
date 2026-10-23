@@ -1,0 +1,259 @@
+.card {
+  composes: padded from '../../components/ui/card.module.css';
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.title {
+  composes: title from '../../components/ui/card.module.css';
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.caption {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.addButton {
+  composes: secondarySm from '../../components/ui/controls.module.css';
+  margin-left: auto;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-bottom: 6px;
+}
+
+.chipsLabel {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding-top: 6px;
+}
+
+.chip {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--border-soft);
+  color: var(--text-soft);
+}
+
+.empty {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row,
+.rowOver {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border-soft);
+  cursor: grab;
+}
+
+.rowOver {
+  background: var(--accent-soft);
+}
+
+.rank {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  width: 20px;
+}
+
+.body {
+  flex: 1 1 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.when {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.whenOff {
+  composes: when;
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.muted {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.why {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.arrow {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.target {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.local {
+  font-size: 12px;
+  color: var(--text-soft);
+  background: var(--border-soft);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.iconButton {
+  composes: iconButton from '../../components/ui/controls.module.css';
+  border-color: var(--border);
+}
+
+.iconButton:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.linkButton {
+  composes: link from '../../components/ui/controls.module.css';
+  font-size: 12px;
+  padding: 4px;
+}
+
+.dangerLink {
+  composes: linkButton;
+  color: var(--danger);
+}
+
+.dangerLink:hover {
+  color: var(--danger);
+  text-decoration: underline;
+}
+
+.editor,
+.test {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  composes: label from '../../components/ui/controls.module.css';
+}
+
+.input {
+  composes: select from '../../components/ui/controls.module.css';
+  box-sizing: border-box;
+}
+
+.timeInput {
+  composes: input from '../../components/ui/controls.module.css';
+  box-sizing: border-box;
+}
+
+.textarea {
+  composes: textarea from '../../components/ui/controls.module.css';
+  box-sizing: border-box;
+}
+
+.fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.windowRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.day,
+.check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.primary {
+  composes: primary from '../../components/ui/controls.module.css';
+}
+
+.secondary {
+  composes: secondary from '../../components/ui/controls.module.css';
+}
+
+.result {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}

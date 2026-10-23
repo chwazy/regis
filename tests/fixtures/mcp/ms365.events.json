@@ -1,0 +1,95 @@
+{
+  "_meta": {
+    "source": "ms365",
+    "tool": "get-calendar-view",
+    "synthetic": true,
+    "note": "Synthetic body of a get-calendar-view result (Microsoft Graph event resources, timezone=UTC), written from the tool schema; no real calendar involved."
+  },
+  "value": [
+    {
+      "id": "AAMkSYNTHETICEVT0001",
+      "subject": "Project kickoff",
+      "bodyPreview": "Kickoff meeting for the new project.",
+      "start": { "dateTime": "2026-10-23T08:00:00.0000000", "timeZone": "UTC" },
+      "end": { "dateTime": "2026-10-23T09:00:00.0000000", "timeZone": "UTC" },
+      "isAllDay": false,
+      "isCancelled": false,
+      "lastModifiedDateTime": "2026-10-15T10:00:00Z",
+      "webLink": "https://outlook.example.test/owa/?itemid=AAMkSYNTHETICEVT0001",
+      "location": { "displayName": "Meeting room 2" },
+      "organizer": { "emailAddress": { "name": "Alice Example", "address": "alice@example.test" } },
+      "attendees": [
+        {
+          "type": "required",
+          "status": { "response": "accepted" },
+          "emailAddress": { "name": "Régis User", "address": "regis.user@example.test" }
+        },
+        {
+          "type": "optional",
+          "status": { "response": "none" },
+          "emailAddress": { "name": "Bob Example", "address": "bob@example.test" }
+        }
+      ],
+      "onlineMeeting": { "joinUrl": "https://meet.example.test/join/synthetic-0001" }
+    },
+    {
+      "id": "AAMkSYNTHETICEVT0002",
+      "subject": "Public holiday",
+      "start": { "dateTime": "2026-10-26T00:00:00.0000000", "timeZone": "UTC" },
+      "end": { "dateTime": "2026-10-27T00:00:00.0000000", "timeZone": "UTC" },
+      "isAllDay": true,
+      "isCancelled": false,
+      "location": { "displayName": "" },
+      "attendees": [],
+      "onlineMeeting": null
+    },
+    {
+      "id": "AAMkSYNTHETICEVT0003",
+      "subject": "Teams sync",
+      "bodyPreview": "Weekly sync on Teams.",
+      "start": { "dateTime": "2026-10-23T13:00:00.0000000", "timeZone": "UTC" },
+      "end": { "dateTime": "2026-10-23T13:30:00.0000000", "timeZone": "UTC" },
+      "isAllDay": false,
+      "isCancelled": false,
+      "lastModifiedDateTime": "2026-10-16T10:00:00Z",
+      "location": { "displayName": "Microsoft Teams Meeting" },
+      "organizer": { "emailAddress": { "name": "Alice Example", "address": "alice@example.test" } },
+      "attendees": [
+        {
+          "type": "required",
+          "status": { "response": "accepted" },
+          "emailAddress": { "name": "Régis User", "address": "regis.user@example.test" }
+        }
+      ],
+      "isOnlineMeeting": true,
+      "onlineMeetingProvider": "teamsForBusiness",
+      "onlineMeeting": { "joinUrl": "https://teams.microsoft.com/l/meetup-join/synthetic-0003" }
+    },
+    {
+      "id": "AAMkSYNTHETICEVT0004",
+      "subject": "Lunch with Bob",
+      "start": { "dateTime": "2026-10-23T11:00:00.0000000", "timeZone": "UTC" },
+      "end": { "dateTime": "2026-10-23T12:00:00.0000000", "timeZone": "UTC" },
+      "isAllDay": false,
+      "isCancelled": false,
+      "location": { "displayName": "Cafeteria" },
+      "attendees": [],
+      "isOnlineMeeting": false,
+      "onlineMeetingProvider": "unknown",
+      "onlineMeeting": null
+    },
+    {
+      "id": "AAMkSYNTHETICEVT0005",
+      "subject": "Cancelled: Teams review",
+      "start": { "dateTime": "2026-10-24T09:00:00.0000000", "timeZone": "UTC" },
+      "end": { "dateTime": "2026-10-24T10:00:00.0000000", "timeZone": "UTC" },
+      "isAllDay": false,
+      "isCancelled": true,
+      "location": { "displayName": "" },
+      "attendees": [],
+      "isOnlineMeeting": true,
+      "onlineMeetingProvider": "teamsForBusiness",
+      "onlineMeeting": { "joinUrl": "https://teams.microsoft.com/l/meetup-join/synthetic-0005" }
+    }
+  ]
+}

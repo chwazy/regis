@@ -1,0 +1,90 @@
+#!/usr/bin/env node
+import { readFileSync, writeFileSync } from 'node:fs';
+import { setTimeout as sleep } from 'node:timers/promises';
+
+// Mode démo : un prompt de PV de réunion reçoit une réponse JSON de PV, les autres la réponse commune.
+const MINUTES_MARKER = 'You write the minutes (procès-verbal) of a meeting';
+async function readStdin() {
+  const chunks = [];
+  for await (const chunk of process.stdin) {
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks).toString('utf8');
+}
+const minutesFixture = process.env.FAKE_CLAUDE_MINUTES_FIXTURE;
+const fixturePath =
+  minutesFixture && (await readStdin()).includes(MINUTES_MARKER)
+    ? minutesFixture
+    : process.env.FAKE_CLAUDE_FIXTURE;
+const delayMs = Number(process.env.FAKE_CLAUDE_DELAY_MS ?? 0);
+const exitCode = Number(process.env.FAKE_CLAUDE_EXIT ?? 0);
+
+if (!fixturePath) {
+  process.stderr.write('FAKE_CLAUDE_FIXTURE is not set\n');
+  process.exit(2);
+}
+
+if (process.env.FAKE_CLAUDE_DUMP) {
+  const configIndex = process.argv.indexOf('--mcp-config');
+  const mcpConfigPath = configIndex === -1 ? null : process.argv[configIndex + 1];
+  writeFileSync(
+    process.env.FAKE_CLAUDE_DUMP,
+    JSON.stringify({
+      mcpConfig: mcpConfigPath ? readFileSync(mcpConfigPath, 'utf8') : null,
+      env: process.env,
+    }),
+  );
+}
+
+const lines = readFileSync(fixturePath, 'utf8')
+  .split(/\r?\n/)
+  .filter((line) => line.trim() !== '')
+  .filter((line) => !('_meta' in JSON.parse(line)));
+
+const REGIS_TOOL_PREFIX = 'mcp__regis__';
+
+async function callRegisTool(toolName, args) {
+  const configIndex = process.argv.indexOf('--mcp-config');
+  const regis = JSON.parse(readFileSync(process.argv[configIndex + 1], 'utf8')).mcpServers.regis;
+  const headers = Object.fromEntries(
+    Object.entries(regis.headers ?? {}).map(([name, value]) => [
+      name,
+      String(value).replace(/\$\{(\w+)\}/g, (_match, variable) => process.env[variable] ?? ''),
+    ]),
+  );
+  const response = await fetch(regis.url, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      accept: 'application/json, text/event-stream',
+      ...headers,
+    },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'tools/call',
+      params: { name: toolName, arguments: args },
+    }),
+  });
+  const body = await response.json();
+  if (body.error || body.result?.isError) {
+    process.stderr.write(`regis tool ${toolName} failed: ${JSON.stringify(body)}\n`);
+    process.exit(1);
+  }
+}
+
+for (const [index, line] of lines.entries()) {
+  if (index > 0 && delayMs > 0) {
+    await sleep(delayMs);
+  }
+  if (process.env.FAKE_CLAUDE_CALL_REGIS) {
+    const event = JSON.parse(line);
+    for (const block of event.type === 'assistant' ? event.message.content : []) {
+      if (block.type === 'tool_use' && block.name.startsWith(REGIS_TOOL_PREFIX)) {
+        await callRegisTool(block.name.slice(REGIS_TOOL_PREFIX.length), block.input);
+      }
+    }
+  }
+  process.stdout.write(`${line}\n`);
+}
+process.exitCode = exitCode;

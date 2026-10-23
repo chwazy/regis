@@ -1,0 +1,17 @@
+node_modules
+dist
+target
+docs
+*.md
+package-lock.json
+# Réécrit par release-please à chaque version.
+apps/desktop/src-tauri/tauri.conf.json
+CHANGELOG.md
+.release-please-manifest.json
+apps/desktop/src-tauri/gen
+apps/desktop/src-tauri/icons
+apps/desktop/src-tauri/binaries
+sidecar/.build
+packages/shared/src/generated
+tests/fixtures
+.*/worktrees

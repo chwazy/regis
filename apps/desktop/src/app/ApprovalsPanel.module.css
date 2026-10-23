@@ -1,0 +1,117 @@
+.root {
+  position: relative;
+  flex: none;
+}
+
+.trigger {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: var(--radius-ctl);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.trigger:hover {
+  color: var(--accent-hover);
+}
+
+.triggerActive,
+.triggerActive:hover {
+  border-color: var(--presence-approval-mid);
+  color: var(--presence-approval-core);
+  background: color-mix(in srgb, var(--presence-approval-outer) 40%, var(--surface));
+}
+
+.count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--surface);
+  background: var(--presence-approval-core);
+  color: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 14px;
+  text-align: center;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: var(--z-menu);
+  width: min(400px, calc(100vw - 32px));
+  box-sizing: border-box;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--text) 12%, transparent);
+}
+
+.menuHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 8px;
+}
+
+.menuTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.badge {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.reviewAll {
+  margin-top: 4px;
+  padding: 10px 12px 4px;
+  border: 0;
+  border-top: 1px solid var(--border-soft);
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.reviewAll:hover {
+  color: var(--accent-hover);
+}
+
+.empty {
+  margin: 0;
+  padding: 4px 12px 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+}

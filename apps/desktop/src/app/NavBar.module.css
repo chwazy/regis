@@ -1,0 +1,70 @@
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  min-height: 60px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brandName {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: var(--radius-ctl);
+  text-decoration: none;
+  color: var(--text-soft);
+}
+
+.link:hover {
+  color: var(--accent-hover);
+}
+
+.active,
+.active:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.search {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 36px;
+  min-width: 240px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--bg);
+  color: var(--text-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.shortcut {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}

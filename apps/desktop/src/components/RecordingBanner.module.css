@@ -1,0 +1,83 @@
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 24px;
+  background: var(--danger);
+  color: var(--surface);
+  font-size: 13px;
+}
+
+.dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--surface);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot {
+    animation: none;
+  }
+}
+
+.label {
+  font-weight: 600;
+}
+
+.title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.9;
+}
+
+.duration {
+  font-family: var(--font-mono);
+}
+
+.link {
+  color: var(--surface);
+  text-decoration: underline;
+}
+
+.link:focus-visible,
+.stop:focus-visible {
+  outline-color: var(--surface);
+}
+
+.error {
+  font-size: 12px;
+}
+
+.stop {
+  margin-left: auto;
+  height: 28px;
+  padding: 0 14px;
+  border: 1px solid var(--surface);
+  border-radius: var(--radius-ctl);
+  background: transparent;
+  color: var(--surface);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.stop:hover:not(:disabled) {
+  background: var(--surface);
+  color: var(--danger);
+}
+
+.stop:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}

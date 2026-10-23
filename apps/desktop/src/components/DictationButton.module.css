@@ -1,0 +1,91 @@
+.wrap {
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.button {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-ctl);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.listening,
+.listening:hover:not(:disabled) {
+  border-color: var(--danger);
+  background: var(--danger);
+  color: var(--surface);
+  box-shadow: 0 0 0 calc(var(--level, 0) * 8px) var(--warn-soft);
+  transition: box-shadow 100ms linear;
+}
+
+.busy:disabled {
+  opacity: 1;
+  cursor: progress;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--accent);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 3s;
+  }
+
+  .listening,
+  .listening:hover:not(:disabled) {
+    transition: none;
+  }
+}
+
+.elapsed {
+  min-width: 34px;
+  color: var(--danger);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.error {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  width: max-content;
+  max-width: 260px;
+  color: var(--danger);
+  font-size: 12px;
+  text-align: right;
+}

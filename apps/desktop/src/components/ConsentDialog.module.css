@@ -1,0 +1,25 @@
+.text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+
+.consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-inner);
+  background: var(--surface-muted);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.consent input {
+  margin-top: 2px;
+  accent-color: var(--accent);
+}

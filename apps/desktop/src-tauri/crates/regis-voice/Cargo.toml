@@ -1,0 +1,36 @@
+[package]
+name = "regis-voice"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[features]
+# Aides de test partagées (jamais activée en release).
+test-util = ["regis-core/test-util"]
+
+[dependencies]
+regis-model = { workspace = true }
+regis-core = { workspace = true }
+regis-stt-whisper = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+futures = { workspace = true }
+ts-rs = { workspace = true }
+rusqlite = { workspace = true }
+ulid = { workspace = true }
+sha2 = { workspace = true }
+reqwest = { workspace = true }
+hound = "3.5.1"
+
+[target.'cfg(windows)'.dependencies]
+cpal = "0.18.2"
+
+[dev-dependencies]
+bytes = { workspace = true }
+hyper = { workspace = true }
+hyper-util = { workspace = true }
+http-body-util = { workspace = true }
+regis-core = { workspace = true, features = ["test-util"] }

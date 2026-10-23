@@ -1,0 +1,276 @@
+/* Trois colonnes (arbre · déroulé · métadonnées) : tient dans la largeur « wide » de la route. */
+.layout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.tree {
+  flex: 1 1 240px;
+  max-width: 300px;
+  box-sizing: border-box;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.treeTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-soft);
+  padding: 0 8px 6px;
+}
+
+.treeItem {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px;
+  padding-left: calc(8px + var(--depth, 0) * 18px);
+  border-radius: var(--radius-ctl);
+  text-decoration: none;
+  color: var(--text);
+}
+
+.treeItem:hover {
+  background: var(--bg);
+}
+
+.treeItemCurrent {
+  composes: treeItem;
+  background: var(--accent-soft);
+}
+
+.treeItemCurrent:hover {
+  background: var(--accent-soft);
+}
+
+.treeText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.treeName {
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.treeAgent {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  margin-top: 6px;
+  background: var(--border-strong);
+}
+
+.tone_accent {
+  background: var(--accent);
+}
+
+.tone_warn {
+  background: var(--warn);
+}
+
+.tone_ok {
+  background: var(--ok);
+}
+
+.tone_danger {
+  background: var(--danger);
+}
+
+.tone_muted {
+  background: var(--border-strong);
+}
+
+.main {
+  flex: 999 1 520px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.side {
+  flex: 1 1 280px;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.statusRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.muted {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.card {
+  composes: padded from '../../components/ui/card.module.css';
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.cardHead .muted {
+  margin-left: auto;
+  font-size: 12px;
+}
+
+.cardTitle {
+  composes: title from '../../components/ui/card.module.css';
+}
+
+.resultText {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.step {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  padding: 8px 0;
+  border-top: 1px solid var(--border-soft);
+}
+
+.stepTime {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  width: 40px;
+  flex: none;
+}
+
+.kind {
+  font-size: 11px;
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  width: 72px;
+  text-align: center;
+  flex: none;
+}
+
+.kindNeutral {
+  color: var(--text-soft);
+  background: var(--border-soft);
+}
+
+.kindTool {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.kindFile {
+  color: var(--ok);
+  background: var(--ok-soft);
+}
+
+.kindWait {
+  color: var(--warn);
+  background: var(--warn-soft);
+}
+
+.kindError {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.stepBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.stepDetail {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.metaRow {
+  display: flex;
+  gap: 8px;
+  padding: 6px 0;
+  border-top: 1px solid var(--border-soft);
+  font-size: 13px;
+}
+
+.metaValue {
+  margin-left: auto;
+  font-size: 13px;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.contextRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 32px;
+  align-items: center;
+  border-top: 1px solid var(--border-soft);
+  font-size: 13px;
+}
+
+.contextKind {
+  font-size: 11px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.terminalHost {
+  height: 440px;
+  box-sizing: border-box;
+  padding: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-inner);
+  overflow: hidden;
+}

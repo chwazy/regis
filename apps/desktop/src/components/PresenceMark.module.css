@@ -1,0 +1,70 @@
+.mark {
+  --outer: var(--presence-outer);
+  --mid: var(--presence-mid);
+  --core: var(--presence-core);
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.approval {
+  --outer: var(--presence-approval-outer);
+  --mid: var(--presence-approval-mid);
+  --core: var(--presence-approval-core);
+}
+
+.recording {
+  --outer: var(--presence-recording-outer);
+  --mid: var(--presence-recording-mid);
+  --core: var(--presence-recording-core);
+}
+
+.outer {
+  fill: var(--outer);
+}
+
+.mid {
+  fill: var(--mid);
+}
+
+.core {
+  fill: var(--core);
+}
+
+.halo {
+  fill: none;
+  stroke: var(--outer);
+  stroke-width: 3;
+}
+
+.arc {
+  fill: none;
+  stroke: var(--core);
+  stroke-width: 5;
+  stroke-linecap: round;
+  transform-origin: 48px 48px;
+  animation: orbit 1.2s linear infinite;
+}
+
+.listening .halo {
+  transform-origin: 48px 48px;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arc,
+  .listening .halo {
+    animation: none;
+  }
+}

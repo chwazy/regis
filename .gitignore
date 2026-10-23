@@ -1,0 +1,12 @@
+node_modules/
+dist/
+target/
+.env
+*.log
+.DS_Store
+apps/desktop/src-tauri/binaries/*
+!apps/desktop/src-tauri/binaries/.gitkeep
+apps/desktop/src-tauri/gen/
+sidecar/.build/
+apps/desktop/src-tauri/bindings/
+*.tsbuildinfo

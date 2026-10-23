@@ -1,0 +1,15 @@
+{
+  "_meta": {
+    "source": "ms365",
+    "synthetic": true,
+    "note": "Synthetic texts for the login and verify-login tools (no Microsoft account available at capture time). The device-code sentence follows the MSAL device code message; the verify-login shape is a guess to confirm against a real login."
+  },
+  "login": {
+    "pending": "To sign in, use a web browser to open the page https://microsoft.com/devicelogin and enter the code ABCD1234 to authenticate.",
+    "entraError": "AADSTS65001: The user or administrator has not consented to use the application."
+  },
+  "verifyLogin": {
+    "loggedIn": { "success": true, "message": "Login successful", "userData": { "displayName": "Régis User", "userPrincipalName": "regis.user@example.test" } },
+    "loggedOut": { "success": false, "message": "Not logged in" }
+  }
+}

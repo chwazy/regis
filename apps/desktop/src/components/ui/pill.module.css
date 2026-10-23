@@ -1,0 +1,65 @@
+.pill {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.accent {
+  composes: pill;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.warn {
+  composes: pill;
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+.ok {
+  composes: pill;
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+.danger {
+  composes: pill;
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.muted {
+  composes: pill;
+  background: var(--border-soft);
+  color: var(--text-soft);
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.pulse {
+  composes: dot;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse {
+    animation: none;
+  }
+}

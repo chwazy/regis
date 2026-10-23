@@ -1,0 +1,22 @@
+{
+  "name": "@regis/sidecar",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build:dev": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node22 --sourcemap --outfile=dist/index.js --banner:js=\"import { createRequire as __regisCreateRequire } from 'node:module'; const require = __regisCreateRequire(import.meta.url);\" && esbuild src/connectors/odoo-mcp/main.ts --bundle --platform=node --format=esm --target=node22 --sourcemap --outfile=dist/odoo-mcp.js --banner:js=\"import { createRequire as __regisCreateRequire } from 'node:module'; const require = __regisCreateRequire(import.meta.url);\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.1.0",
+    "@regis/shared": "*",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "cross-spawn": "^7.0.6",
+    "docxtemplater": "3.71.1",
+    "pizzip": "3.3.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/cross-spawn": "^6.0.6"
+  }
+}

@@ -1,0 +1,39 @@
+.shell {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1 0 auto;
+  min-width: 0;
+  width: 100%;
+  max-width: var(--width-default);
+  margin: 0 auto;
+  padding: 40px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.main[data-layout='narrow'] {
+  max-width: var(--width-narrow);
+}
+
+.main[data-layout='wide'] {
+  max-width: var(--width-wide);
+}
+
+.main[data-layout='full'] {
+  max-width: none;
+}

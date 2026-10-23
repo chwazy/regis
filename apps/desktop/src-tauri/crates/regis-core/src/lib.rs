@@ -1,0 +1,13 @@
+pub mod bootstrap;
+pub mod db;
+pub mod demo;
+pub mod events;
+pub mod files;
+pub mod modules;
+pub mod search;
+pub mod secrets;
+pub mod sidecar;
+pub mod store_rpc;
+pub mod stt;
+pub mod uninstall;
+pub mod widgets;

@@ -1,0 +1,89 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 12vh;
+  background: color-mix(in srgb, var(--text) 35%, transparent);
+}
+
+.panel {
+  width: min(640px, calc(100vw - 32px));
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--text) 18%, transparent);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.input {
+  height: 52px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  font: inherit;
+  font-size: 15px;
+  color: var(--text);
+  outline-offset: -2px;
+}
+
+.results {
+  max-height: 55vh;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.groupTitle {
+  margin: 4px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.result {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px;
+  border: 0;
+  border-radius: var(--radius-ctl);
+  background: none;
+  font: inherit;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.resultActive {
+  composes: result;
+  background: var(--accent-soft);
+}
+
+.resultLabel {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.resultDetail {
+  min-width: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empty {
+  margin: 0;
+  padding: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+}

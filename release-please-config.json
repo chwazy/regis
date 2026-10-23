@@ -1,0 +1,52 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "node",
+  "include-component-in-tag": false,
+  "bump-minor-pre-major": true,
+  "packages": {
+    ".": {
+      "package-name": "regis",
+      "release-as": "0.1.0",
+      "changelog-path": "CHANGELOG.md",
+      "extra-files": [
+        { "type": "json", "path": "apps/desktop/src-tauri/tauri.conf.json", "jsonpath": "$.version" },
+        {
+          "type": "toml",
+          "path": "apps/desktop/src-tauri/Cargo.toml",
+          "jsonpath": "$.workspace.package.version"
+        },
+        {
+          "type": "toml",
+          "path": "apps/desktop/src-tauri/Cargo.lock",
+          "jsonpath": "$.package[?(@.name.value == 'regis-desktop')].version"
+        },
+        {
+          "type": "toml",
+          "path": "apps/desktop/src-tauri/Cargo.lock",
+          "jsonpath": "$.package[?(@.name.value == 'regis-model')].version"
+        },
+        {
+          "type": "toml",
+          "path": "apps/desktop/src-tauri/Cargo.lock",
+          "jsonpath": "$.package[?(@.name.value == 'regis-core')].version"
+        },
+        {
+          "type": "toml",
+          "path": "apps/desktop/src-tauri/Cargo.lock",
+          "jsonpath": "$.package[?(@.name.value == 'regis-stt-whisper')].version"
+        },
+        {
+          "type": "toml",
+          "path": "apps/desktop/src-tauri/Cargo.lock",
+          "jsonpath": "$.package[?(@.name.value == 'regis-voice')].version"
+        },
+        { "type": "json", "path": "apps/desktop/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "sidecar/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "packages/shared/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "package-lock.json", "jsonpath": "$.packages['apps/desktop'].version" },
+        { "type": "json", "path": "package-lock.json", "jsonpath": "$.packages['sidecar'].version" },
+        { "type": "json", "path": "package-lock.json", "jsonpath": "$.packages['packages/shared'].version" }
+      ]
+    }
+  }
+}

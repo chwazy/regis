@@ -1,0 +1,30 @@
+[package]
+name = "regis-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[features]
+# Aides de test partagées avec les autres crates (jamais activée en release).
+test-util = []
+
+[dependencies]
+regis-model = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+futures = { workspace = true }
+ts-rs = { workspace = true }
+rusqlite = { workspace = true }
+sqlite-vec = { workspace = true }
+keyring = { workspace = true }
+ulid = { workspace = true }
+notify = { workspace = true }
+pdf-extract = { workspace = true }
+zip = { workspace = true }
+quick-xml = { workspace = true }
+calamine = { workspace = true }
+sha2 = { workspace = true }
+reqwest = { workspace = true }

@@ -1,0 +1,75 @@
+.root {
+  position: relative;
+  flex: none;
+}
+
+.trigger {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: var(--radius-ctl);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.trigger:hover {
+  color: var(--accent-hover);
+}
+
+.triggerActive,
+.triggerActive:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: var(--z-menu);
+  width: min(240px, calc(100vw - 32px));
+  box-sizing: border-box;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--text) 12%, transparent);
+}
+
+.menuTitle {
+  margin: 0;
+  padding: 6px 12px 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: var(--radius-ctl);
+  text-decoration: none;
+  color: var(--text-soft);
+}
+
+.link:hover {
+  color: var(--accent-hover);
+}
+
+.active,
+.active:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 500;
+}

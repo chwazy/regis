@@ -1,0 +1,90 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  # Reconstruit l'installateur d'une release existante.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag (e.g. v0.2.0)
+        required: true
+
+permissions: {}
+
+jobs:
+  release-please:
+    name: Release PR / tag
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      # Avec GITHUB_TOKEN, la Release PR ne lance pas la CI : RELEASE_PLEASE_TOKEN
+      # (facultatif) est un jeton fine-grained contents + pull requests.
+      - id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+          target-branch: main
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  # Même run que la release : un tag poussé avec GITHUB_TOKEN ne déclenche
+  # aucun autre workflow.
+  windows-installer:
+    name: Windows installer
+    needs: release-please
+    if: ${{ !cancelled() && (needs.release-please.outputs.release_created == 'true' || github.event_name == 'workflow_dispatch') }}
+    runs-on: windows-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    env:
+      TAG: ${{ needs.release-please.outputs.tag_name || inputs.tag }}
+      CARGO_TERM_COLOR: always
+      LIBCLANG_PATH: C:\Program Files\LLVM\bin
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          workspaces: apps/desktop/src-tauri
+          shared-key: release
+      - run: npm ci
+      - run: npm run build
+      # Nom ASCII : GitHub remplace les caractères accentués des noms d'assets.
+      - id: package
+        name: Rename and checksum
+        run: |
+          version="${TAG#v}"
+          setup=$(ls apps/desktop/src-tauri/target/release/bundle/nsis/*"_${version}_x64-setup.exe")
+          out="Regis_${version}_x64-setup.exe"
+          cp "$setup" "$out"
+          sha256sum "$out" > "$out.sha256"
+          echo "file=$out" >> "$GITHUB_OUTPUT"
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: ${{ steps.package.outputs.file }}
+      - name: Upload to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FILE: ${{ steps.package.outputs.file }}
+        run: gh release upload "$TAG" "$FILE" "$FILE.sha256" --clobber

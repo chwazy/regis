@@ -1,0 +1,57 @@
+.dialog {
+  max-height: 85vh;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 16px 48px color-mix(in srgb, var(--text) 18%, transparent);
+}
+
+.dialog::backdrop {
+  background: color-mix(in srgb, var(--text) 35%, transparent);
+}
+
+.sm {
+  composes: dialog;
+  width: min(440px, calc(100vw - 32px));
+}
+
+.md {
+  composes: dialog;
+  width: min(680px, calc(100vw - 32px));
+}
+
+.lg {
+  composes: dialog;
+  width: min(960px, calc(100vw - 32px));
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: calc(85vh - 2px);
+  padding: 20px 24px;
+  overflow: auto;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
