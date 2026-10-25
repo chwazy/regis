@@ -169,7 +169,12 @@ export function ChatPanel({ chatJobId = null, onChatJobChange }: ChatPanelProps)
       <div className={styles.head}>
         <h2 className={styles.title}>Assistant</h2>
         {chatAgent && (
-          <span className={styles.agent}>
+          <span
+            className={styles.agent}
+            title={[chatAgent.name, chatAgent.model, chatAgent.isLocalOnly ? 'local' : null]
+              .filter(Boolean)
+              .join(' · ')}
+          >
             {chatAgent.name}
             {chatAgent.model ? ` · ${chatAgent.model}` : ''}
             {chatAgent.isLocalOnly ? ' · local' : ''}
@@ -238,13 +243,14 @@ export function ChatPanel({ chatJobId = null, onChatJobChange }: ChatPanelProps)
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={(event) => {
-            if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+            // Entrée envoie, Maj+Entrée passe à la ligne.
+            if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
               send(event);
             }
           }}
         />
         <div className={styles.actions}>
-          <span className={styles.hint}>Ctrl+Entrée</span>
+          <span className={styles.hint}>Maj+Entrée : nouvelle ligne</span>
           <span className={styles.dictation} onMouseDownCapture={remember}>
             <DictationButton onText={insertText} disabled={sending} />
           </span>
