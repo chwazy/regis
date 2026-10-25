@@ -3,6 +3,7 @@ import type { Entity, JobEvent } from '@regis/shared';
 import {
   describeContextRef,
   eventDetail,
+  timelineSummaries,
   formatCost,
   formatDuration,
   formatTokens,
@@ -64,6 +65,24 @@ describe('job view helpers', () => {
       contextRefs: [{ type: 'client', id: 'c1' }],
     });
     expect(readStartInfo([])).toEqual({ model: null, cwd: null, worktree: null, contextRefs: [] });
+  });
+
+  it('does not repeat the last message in the summary of the end event', () => {
+    const reply = { role: 'assistant', text: 'Bonjour' };
+    const events = [
+      event(1, { type: 'start', summary: 'Démarrage' }),
+      event(2, { summary: 'Bonjour', payloadJson: reply }),
+      event(3, { type: 'end', summary: 'Bonjour', payloadJson: { resultText: 'Bonjour', isError: false } }),
+      event(4, { type: 'end', summary: 'Autre', payloadJson: { resultText: 'Autre', isError: false } }),
+      event(5, { type: 'end', summary: 'Bonjour', payloadJson: { resultText: 'Bonjour', isError: true } }),
+    ];
+    expect(timelineSummaries(events)).toEqual([
+      'Démarrage',
+      'Bonjour',
+      'Terminé',
+      'Autre',
+      'Terminé en erreur',
+    ]);
   });
 
   it('shows the tool name as the detail of a tool call', () => {
