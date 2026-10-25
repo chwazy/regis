@@ -313,7 +313,7 @@ function JobView({ jobId }: { jobId: string | undefined }) {
             <TerminalPane jobId={job.id} resume={terminal.resume} onEnded={() => setTerminal(null)} />
           )}
 
-          {!(terminal && agent?.mode === 'pty') && <JobTimeline events={events} />}
+          {job.kind !== 'chat' && !(terminal && agent?.mode === 'pty') && <JobTimeline events={events} />}
         </div>
 
         <aside aria-label="Métadonnées" className={styles.side}>
