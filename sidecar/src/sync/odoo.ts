@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { Item, ItemKind } from '@regis/shared';
+import { calendarDay } from '../calendar-day';
 import type { McpHost } from '../mcp/host';
 import {
   DEFAULT_INVOICE_DAYS,
@@ -201,12 +202,7 @@ export function mapTimesheet(raw: unknown, connectorId: string): Item {
 }
 
 export function todayIn(timeZone: string, now: Date): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(now);
+  return calendarDay(now, timeZone);
 }
 
 export function mapInvoice(

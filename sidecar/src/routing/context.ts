@@ -1,5 +1,8 @@
 import type { Agent, Entity, Job, Link } from '@regis/shared';
+import { calendarDay } from '../calendar-day';
 import { DEFAULT_TIMEZONE, type RoutingContext, type TaskType } from './engine';
+
+export { calendarDay };
 
 export const TIMEZONE_SETTING = 'app.timezone';
 
@@ -28,15 +31,6 @@ export interface ContextDeps {
 
 const ENTITY_REF_TYPES = ['entity', 'client', 'project'];
 const PERCENT = 100;
-
-export function calendarDay(date: Date, timezone: string): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: timezone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(date);
-}
 
 export function linkedEntityIds(refs: ContextRef[], links: Link[]): Set<string> {
   const found = new Set<string>();
