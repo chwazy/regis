@@ -8,7 +8,7 @@ import { isActive, mergeEvent } from '../screens/job/job-view';
 import { JobStatusPill } from './JobStatusPill';
 import { ErrorMessage } from './ui/Feedback';
 import { useDictationField } from '../lib/use-dictation';
-import { buildChatTimeline } from './chat-messages';
+import { buildChatTimeline, type ChatItem } from './chat-messages';
 import { DictationButton } from './DictationButton';
 import styles from './ChatPanel.module.css';
 import controls from './ui/controls.module.css';
@@ -37,6 +37,33 @@ function SubJobCard({ job }: { job: Job }) {
       {active && <span className={styles.progress} aria-hidden="true" />}
       {summary && <span className={styles.subJobSummary}>{summary}</span>}
     </div>
+  );
+}
+
+/** Messages et sous-tâches d'une conversation, en éléments de liste. */
+export function ChatTranscriptItems({ items }: { items: ChatItem[] }) {
+  return items.map((item) =>
+    item.kind === 'message' ? (
+      <li
+        key={item.key}
+        className={`${styles.message} ${item.message.role === 'user' ? styles.user : styles.assistant}`}
+      >
+        {item.message.text}
+      </li>
+    ) : (
+      <li key={item.key} className={styles.subJobItem}>
+        <SubJobCard job={item.job} />
+      </li>
+    ),
+  );
+}
+
+/** Conversation en lecture seule, pour l'écran d'un job. */
+export function ChatTranscript({ items }: { items: ChatItem[] }) {
+  return (
+    <ul className={styles.transcript}>
+      <ChatTranscriptItems items={items} />
+    </ul>
   );
 }
 
@@ -204,20 +231,7 @@ export function ChatPanel({ chatJobId = null, onChatJobChange }: ChatPanelProps)
         {currentId === null && (
           <li className={styles.hint}>Décris ce que tu veux faire : l’orchestrateur délègue aux agents.</li>
         )}
-        {timeline.map((item) =>
-          item.kind === 'message' ? (
-            <li
-              key={item.key}
-              className={`${styles.message} ${item.message.role === 'user' ? styles.user : styles.assistant}`}
-            >
-              {item.message.text}
-            </li>
-          ) : (
-            <li key={item.key} className={styles.subJobItem}>
-              <SubJobCard job={item.job} />
-            </li>
-          ),
-        )}
+        <ChatTranscriptItems items={timeline} />
         {busy && <li className={styles.hint}>L’orchestrateur travaille…</li>}
         {chat?.status === 'failed' && chat.error && (
           <li className={styles.jobError}>

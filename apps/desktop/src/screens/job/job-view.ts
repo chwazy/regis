@@ -82,6 +82,30 @@ export function readStartInfo(events: JobEvent[]): JobStartInfo {
   };
 }
 
+function messageText(event: JobEvent): string | null {
+  return isRecord(event.payloadJson) && typeof event.payloadJson.text === 'string'
+    ? event.payloadJson.text
+    : null;
+}
+
+/** Résumés du déroulé : la fin n'y répète pas le texte du dernier message de l'agent. */
+export function timelineSummaries(events: JobEvent[]): string[] {
+  let lastMessage: string | null = null;
+  return events.map((event) => {
+    if (event.type === 'message') {
+      lastMessage = messageText(event);
+      return event.summary;
+    }
+    if (event.type === 'end' && isRecord(event.payloadJson)) {
+      const { resultText, isError } = event.payloadJson;
+      if (typeof resultText === 'string' && resultText !== '' && resultText === lastMessage) {
+        return isError === true ? 'Terminé en erreur' : 'Terminé';
+      }
+    }
+    return event.summary;
+  });
+}
+
 export function eventDetail(event: JobEvent): string {
   if (!isRecord(event.payloadJson)) {
     return '';
