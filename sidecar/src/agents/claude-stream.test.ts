@@ -1,7 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { buildClaudeArgs, parseClaudeStreamLine } from './claude-stream';
+import {
+  buildClaudeArgs,
+  CLAUDE_LOGIN_MESSAGE,
+  isClaudeLoginFailure,
+  parseClaudeStreamLine,
+} from './claude-stream';
 import type { AgentEvent } from './driver';
 import { makeAgent, makeRunInput } from './test-support';
 
@@ -24,6 +29,22 @@ describe('parseClaudeStreamLine', () => {
     expect(events[1]).toMatchObject({ type: 'message', text: 'pong' });
     expect(events[2]).toMatchObject({ type: 'usage', costUsd: 0.00028688 });
     expect(events[3]).toMatchObject({ type: 'end', isError: false, resultText: 'pong' });
+  });
+
+  it('turns an expired Claude Code login into an explicit error before the end', () => {
+    const events = replay('auth-expired');
+
+    expect(events.map((event) => event.type)).toEqual(['start', 'message', 'usage', 'error', 'end']);
+    expect(events[3]).toEqual({ type: 'error', message: CLAUDE_LOGIN_MESSAGE });
+    expect(events[4]).toMatchObject({ type: 'end', isError: true });
+  });
+
+  it('only flags failed results whose text is a login failure', () => {
+    expect(
+      isClaudeLoginFailure('Failed to authenticate: OAuth session expired and could not be refreshed'),
+    ).toBe(true);
+    expect(isClaudeLoginFailure('I failed to authenticate against the Odoo API')).toBe(false);
+    expect(replay('simple').some((event) => event.type === 'error')).toBe(false);
   });
 
   it('accounts tokens and cost from modelUsage on every fixture', () => {

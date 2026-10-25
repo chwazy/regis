@@ -204,6 +204,11 @@ export function ChatPanel({ chatJobId = null, onChatJobChange }: ChatPanelProps)
           ),
         )}
         {busy && <li className={styles.hint}>L’orchestrateur travaille…</li>}
+        {chat?.status === 'failed' && chat.error && (
+          <li className={styles.jobError}>
+            <ErrorMessage>{chat.error}</ErrorMessage>
+          </li>
+        )}
       </ul>
       {error && (
         <div className={styles.error}>

@@ -283,24 +283,23 @@ export function AgentEditor({
             </div>
           )}
 
-          {draft.runtime !== 'claude-cli' && (
-            <div className={styles.field}>
-              <label htmlFor="ag-model" className={styles.fieldLabel}>
-                Modèle
-              </label>
-              <input
-                id="ag-model"
-                className={styles.monoInput}
-                value={draft.model ?? ''}
-                onChange={(event) => update({ model: event.target.value || null })}
-              />
-              {draft.runtime === 'ollama' && detect !== null && (
-                <Status ok={detect.ollama !== undefined}>
-                  {detect.ollama !== undefined ? '✓ Ollama joignable' : '⚠ Ollama injoignable'}
-                </Status>
-              )}
-            </div>
-          )}
+          <div className={styles.field}>
+            <label htmlFor="ag-model" className={styles.fieldLabel}>
+              Modèle
+            </label>
+            <input
+              id="ag-model"
+              className={styles.monoInput}
+              value={draft.model ?? ''}
+              placeholder={draft.runtime === 'claude-cli' ? 'Défaut de la CLI (ex. sonnet)' : undefined}
+              onChange={(event) => update({ model: event.target.value || null })}
+            />
+            {draft.runtime === 'ollama' && detect !== null && (
+              <Status ok={detect.ollama !== undefined}>
+                {detect.ollama !== undefined ? '✓ Ollama joignable' : '⚠ Ollama injoignable'}
+              </Status>
+            )}
+          </div>
 
           {draft.runtime === 'anthropic-api' && (
             <div className={styles.field}>
