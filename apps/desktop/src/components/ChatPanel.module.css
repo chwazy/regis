@@ -41,8 +41,17 @@
 
 .agent {
   margin-left: auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 12px;
   color: var(--text-muted);
+}
+
+.clear {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .expand {
