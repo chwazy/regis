@@ -72,6 +72,7 @@ export function createMemoryJobStore(): MemoryJobStore {
       events.push(stored);
       return Promise.resolve(stored);
     },
+    listEvents: (jobId) => Promise.resolve(events.filter((event) => event.jobId === jobId)),
     listJobs: (status) =>
       Promise.resolve([...jobs.values()].filter((job) => status === undefined || job.status === status)),
   };
@@ -103,6 +104,7 @@ export interface TestRunnerOptions {
   agents?: Agent[];
   systemPromptFor?: JobRunnerDeps['systemPromptFor'];
   regisEndpoint?: () => Promise<RegisMcpEndpoint>;
+  drivers?: Partial<Record<Agent['runtime'], AgentDriver>>;
 }
 
 export function createTestRunner(options: TestRunnerOptions = {}): TestRunner {
@@ -125,7 +127,8 @@ export function createTestRunner(options: TestRunnerOptions = {}): TestRunner {
   const runner = new JobRunner({
     store,
     getAgent: (id) => Promise.resolve(agents.get(id)),
-    getDriver: (agent) => (agent.runtime === 'claude-cli' ? driver : statelessDriver(agent)),
+    getDriver: (agent) =>
+      options.drivers?.[agent.runtime] ?? (agent.runtime === 'claude-cli' ? driver : statelessDriver(agent)),
     getSetting: (key) => Promise.resolve(options.settings?.[key] ?? null),
     getDataDir: () => Promise.resolve(dataDir),
     ...(options.systemPromptFor ? { systemPromptFor: options.systemPromptFor } : {}),

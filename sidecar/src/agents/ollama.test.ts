@@ -79,6 +79,26 @@ describe('OllamaDriver', () => {
     ]);
   });
 
+  it('sends the previous turns between the system prompt and the new message', async () => {
+    const { url, bodies } = await startMockOllama();
+    const driver = new OllamaDriver({ getSetting: () => Promise.resolve(url) });
+    const history = [
+      { role: 'user' as const, text: 'Test test' },
+      { role: 'assistant' as const, text: 'Bonjour' },
+    ];
+
+    await collect(
+      driver.run(makeRunInput({ agent: ollamaAgent, systemPrompt: 'sys', prompt: 'Quel modèle ?', history })),
+    );
+
+    expect(bodies[0]?.messages).toEqual([
+      { role: 'system', content: 'sys' },
+      { role: 'user', content: 'Test test' },
+      { role: 'assistant', content: 'Bonjour' },
+      { role: 'user', content: 'Quel modèle ?' },
+    ]);
+  });
+
   it('reports an unreachable server as unavailable', async () => {
     const driver = new OllamaDriver({ getSetting: () => Promise.resolve('http://127.0.0.1:1') });
 

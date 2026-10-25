@@ -1,5 +1,6 @@
 import type { Agent, Job, JobEvent, JobStatus, NewJob, NewJobEvent } from '@regis/shared';
-import type { AgentDriver } from '../agents/driver';
+import type { AgentDriver, ChatTurn } from '../agents/driver';
+import { chatHistory } from './chat-history';
 import { toJobEvent } from './map-events';
 import type { PtyJobs } from './pty-job';
 import { prepareWorkdir, type Workdir } from './workdir';
@@ -25,6 +26,7 @@ export interface JobStore {
   getJob: (id: string) => Promise<Job>;
   updateJob: (id: string, patch: Record<string, unknown>) => Promise<Job>;
   appendEvent: (event: NewJobEvent) => Promise<JobEvent>;
+  listEvents: (jobId: string) => Promise<JobEvent[]>;
   listJobs: (status?: JobStatus) => Promise<Job[]>;
 }
 
@@ -248,12 +250,17 @@ export class JobRunner {
     if (!agent) {
       throw new JobNotResumableError(`Agent introuvable pour le job ${job.id}`);
     }
+    const driver = this.deps.getDriver(agent);
+    if (driver.supportsResume === true && job.sessionId) {
+      return;
+    }
+    if (driver.supportsHistory === true) {
+      return;
+    }
     if (!job.sessionId) {
       throw new JobNotResumableError(`Le job ${job.id} n’a pas de session à reprendre`);
     }
-    if (this.deps.getDriver(agent).supportsResume !== true) {
-      throw new JobNotResumableError(`Le runtime ${agent.runtime} ne permet pas de reprendre une session`);
-    }
+    throw new JobNotResumableError(`Le runtime ${agent.runtime} ne permet pas de reprendre une session`);
   }
 
   private async cancelDescendants(jobId: string): Promise<void> {
@@ -408,13 +415,20 @@ export class JobRunner {
     let tokensOut = job.tokensOut;
     const systemPrompt = this.deps.systemPromptFor?.(job, agent);
     try {
-      const events = this.deps.getDriver(agent).run({
+      const driver = this.deps.getDriver(agent);
+      const resumeSession = run.resume && driver.supportsResume === true && Boolean(job.sessionId);
+      const history: ChatTurn[] =
+        run.resume && !resumeSession && driver.supportsHistory === true
+          ? chatHistory(job, await this.deps.store.listEvents(job.id), run.message)
+          : [];
+      const events = driver.run({
         jobId: job.id,
         agent,
         prompt: run.message,
         ...(systemPrompt ? { systemPrompt } : {}),
         cwd,
-        ...(run.resume && job.sessionId ? { sessionId: job.sessionId, resume: true } : {}),
+        ...(resumeSession && job.sessionId ? { sessionId: job.sessionId, resume: true } : {}),
+        ...(history.length > 0 ? { history } : {}),
         signal,
       });
       for await (const event of events) {

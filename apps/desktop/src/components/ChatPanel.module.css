@@ -49,7 +49,7 @@
   composes: iconButton from '../components/ui/controls.module.css';
 }
 
-.title + .expand {
+.title + .clear {
   margin-left: auto;
 }
 

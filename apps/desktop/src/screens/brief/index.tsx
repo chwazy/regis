@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { Agent, Brief, BriefData, HourSuggestion, Job } from '@regis/shared';
 import { ChatPanel } from '../../components/ChatPanel';
 import { ErrorMessage, Loading } from '../../components/ui/Feedback';
+import { setChatJobId, useChatJobId } from '../../lib/chat-session';
 import { errorMessage } from '../../lib/format';
 import { invokeCmd, onRegisEvent, sidecarCall } from '../../lib/ipc';
 import { useTimezone } from '../../lib/use-timezone';
@@ -62,7 +63,7 @@ export default function BriefScreen() {
   const { data, brief, agents, timezone, error, setError, reload } = useBriefScreen();
   const [regenerating, setRegenerating] = useState(false);
   const [submitted, setSubmitted] = useState<ReadonlySet<string>>(new Set());
-  const [chatJobId, setChatJobId] = useState<string | null>(null);
+  const chatJobId = useChatJobId();
 
   const regenerate = () => {
     setRegenerating(true);
