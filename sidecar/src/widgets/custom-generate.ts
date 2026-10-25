@@ -48,7 +48,7 @@ export function buildCustomWidgetPrompt(description: string, retryReason?: strin
     ITEM_KINDS.map((kind: CustomItemKind) => [kind, customFieldsOf(kind)]),
   );
   return [
-    'You define a dashboard widget for a personal command regis from a French description. Answer with data only.',
+    'You define a dashboard widget for Régis, a personal command hub, from a French description. Answer with data only.',
     'The widget is a declarative query over the local cache of items, executed by fixed code. Never write SQL, JavaScript or a shell command.',
     'Reply with a single JSON object and nothing else, with exactly this shape:',
     '{"title": string (max 60 chars, French), "itemKind": one of ' +
