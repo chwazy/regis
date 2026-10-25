@@ -177,6 +177,12 @@
   margin: 0 18px 8px;
 }
 
+.jobError {
+  align-self: stretch;
+  max-width: 92%;
+  white-space: pre-wrap;
+}
+
 .form {
   display: flex;
   flex-direction: column;

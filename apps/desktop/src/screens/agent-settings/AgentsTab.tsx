@@ -23,6 +23,7 @@ import { RuntimeBadge } from './RuntimeBadge';
 import { RuntimePicker } from './RuntimePicker';
 
 const CLAUDE_BIN_SETTING = 'agents.claudeBin';
+const ORCHESTRATOR_SETTING = 'agents.defaultAgentId';
 const JOBS_LIMIT = 200;
 
 interface AgentsTabProps {
@@ -38,6 +39,7 @@ export function AgentsTab({ agents, onAgentsChange }: AgentsTabProps) {
   const selectedId = pickedId ?? agents[0]?.id ?? null;
   const [creation, setCreation] = useState<Creation | null>(null);
   const [claudeBin, setClaudeBin] = useState('');
+  const [orchestratorId, setOrchestratorId] = useState<string | null>(null);
   const [detect, setDetect] = useState<DetectResult | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const timezone = useTimezone();
@@ -50,6 +52,9 @@ export function AgentsTab({ agents, onAgentsChange }: AgentsTabProps) {
       .catch(() => undefined);
     invokeCmd<string | null>('get_setting', { key: CLAUDE_BIN_SETTING })
       .then((value) => active && setClaudeBin(value ?? ''))
+      .catch(() => undefined);
+    invokeCmd<string | null>('get_setting', { key: ORCHESTRATOR_SETTING })
+      .then((value) => active && setOrchestratorId(value))
       .catch(() => undefined);
     invokeCmd<Job[]>('list_jobs', { limit: JOBS_LIMIT })
       .then((loaded) => active && setJobs(loaded))
@@ -95,97 +100,128 @@ export function AgentsTab({ agents, onAgentsChange }: AgentsTabProps) {
     return sidecarCall<AgentTestOutcome>('agents.test', { agentId: agent.id });
   };
 
+  const enabledAgents = agents.filter((agent) => agent.enabled);
+  // Même repli que le sidecar : l'agent configuré s'il est actif, sinon le premier agent actif.
+  const orchestrator = enabledAgents.find((agent) => agent.id === orchestratorId) ?? enabledAgents[0] ?? null;
+
+  const chooseOrchestrator = (agentId: string) => {
+    setOrchestratorId(agentId);
+    invokeCmd('set_setting', { key: ORCHESTRATOR_SETTING, value: agentId }).catch(() =>
+      setOrchestratorId(orchestratorId),
+    );
+  };
+
   const select = (agentId: string) => {
     setCreation(null);
     setSelectedId(agentId);
   };
 
   return (
-    <div className={styles.masterDetail}>
-      <section aria-label="Agents configurés" className={styles.listCard}>
-        <ul className={styles.agentList}>
-          {agents.map((agent) => {
-            const state = stateLabel(agent);
-            const isSelected = creation === null && agent.id === selectedId;
-            return (
-              <li key={agent.id}>
-                <button
-                  type="button"
-                  className={isSelected ? styles.agentItemOn : styles.agentItem}
-                  aria-pressed={isSelected}
-                  onClick={() => select(agent.id)}
-                >
-                  <RuntimeBadge runtime={agent.runtime} />
-                  <span className={styles.agentItemText}>
-                    <span className={styles.agentItemName}>{agent.name}</span>
-                    <span className={styles.agentItemSub}>{agentSubtitle(agent)}</span>
+    <div className={styles.page}>
+      <label className={styles.scopePicker}>
+        <span>Agent de l’orchestrateur</span>
+        <select
+          className={styles.select}
+          value={orchestrator?.id ?? ''}
+          disabled={enabledAgents.length === 0}
+          onChange={(event) => chooseOrchestrator(event.target.value)}
+        >
+          {enabledAgents.length === 0 && <option value="">Aucun agent actif</option>}
+          {enabledAgents.map((agent) => (
+            <option key={agent.id} value={agent.id}>
+              {agent.name}
+              {agent.model ? ` · ${agent.model}` : ''}
+            </option>
+          ))}
+        </select>
+        <span className={styles.hint}>Le modèle se règle dans la fiche de l’agent.</span>
+      </label>
+      <div className={styles.masterDetail}>
+        <section aria-label="Agents configurés" className={styles.listCard}>
+          <ul className={styles.agentList}>
+            {agents.map((agent) => {
+              const state = stateLabel(agent);
+              const isSelected = creation === null && agent.id === selectedId;
+              return (
+                <li key={agent.id}>
+                  <button
+                    type="button"
+                    className={isSelected ? styles.agentItemOn : styles.agentItem}
+                    aria-pressed={isSelected}
+                    onClick={() => select(agent.id)}
+                  >
+                    <RuntimeBadge runtime={agent.runtime} />
+                    <span className={styles.agentItemText}>
+                      <span className={styles.agentItemName}>{agent.name}</span>
+                      <span className={styles.agentItemSub}>{agentSubtitle(agent)}</span>
+                    </span>
+                    <StatusPill tone={state.tone === 'ok' ? 'ok' : 'muted'}>
+                      {capitalize(state.text)}
+                    </StatusPill>
+                  </button>
+                </li>
+              );
+            })}
+            {creation !== null && (
+              <li>
+                <button type="button" className={styles.agentItemOn} aria-pressed="true">
+                  <span className={styles.badgeNew} aria-hidden="true">
+                    +
                   </span>
-                  <StatusPill tone={state.tone === 'ok' ? 'ok' : 'muted'}>
-                    {capitalize(state.text)}
-                  </StatusPill>
+                  <span className={styles.agentItemText}>
+                    <span className={styles.agentItemName}>
+                      {creation.stage === 'edit' ? creation.agent.name : 'Nouvel agent'}
+                    </span>
+                    <span className={styles.agentItemSub}>brouillon</span>
+                  </span>
                 </button>
               </li>
-            );
-          })}
-          {creation !== null && (
-            <li>
-              <button type="button" className={styles.agentItemOn} aria-pressed="true">
-                <span className={styles.badgeNew} aria-hidden="true">
-                  +
-                </span>
-                <span className={styles.agentItemText}>
-                  <span className={styles.agentItemName}>
-                    {creation.stage === 'edit' ? creation.agent.name : 'Nouvel agent'}
-                  </span>
-                  <span className={styles.agentItemSub}>brouillon</span>
-                </span>
-              </button>
-            </li>
-          )}
-        </ul>
-        {agents.length === 0 && creation === null && <p className={styles.empty}>Aucun agent configuré.</p>}
-        <div className={styles.listFoot}>
-          <button
-            type="button"
-            className={styles.secondaryButtonWide}
-            disabled={creation !== null}
-            onClick={() => setCreation({ stage: 'pick', runtime: 'claude-cli' })}
-          >
-            + Ajouter un agent
-          </button>
-        </div>
-      </section>
+            )}
+          </ul>
+          {agents.length === 0 && creation === null && <p className={styles.empty}>Aucun agent configuré.</p>}
+          <div className={styles.listFoot}>
+            <button
+              type="button"
+              className={styles.secondaryButtonWide}
+              disabled={creation !== null}
+              onClick={() => setCreation({ stage: 'pick', runtime: 'claude-cli' })}
+            >
+              + Ajouter un agent
+            </button>
+          </div>
+        </section>
 
-      {creation?.stage === 'pick' && (
-        <RuntimePicker
-          value={creation.runtime}
-          detect={detect}
-          onChange={(runtime) => setCreation({ stage: 'pick', runtime })}
-          onCancel={() => setCreation(null)}
-          onContinue={() =>
-            setCreation({
-              stage: 'edit',
-              agent: withRuntime(newAgentDraft(), creation.runtime),
-            })
-          }
-        />
-      )}
+        {creation?.stage === 'pick' && (
+          <RuntimePicker
+            value={creation.runtime}
+            detect={detect}
+            onChange={(runtime) => setCreation({ stage: 'pick', runtime })}
+            onCancel={() => setCreation(null)}
+            onContinue={() =>
+              setCreation({
+                stage: 'edit',
+                agent: withRuntime(newAgentDraft(), creation.runtime),
+              })
+            }
+          />
+        )}
 
-      {selected && creation?.stage !== 'pick' && (
-        <AgentEditor
-          key={selected.id === '' ? 'new' : selected.id}
-          agent={selected}
-          isNew={selected.id === ''}
-          connectors={connectors}
-          settings={{ claudeBin }}
-          detect={detect}
-          detectedClaude={detectedClaude}
-          activity={selected.id === '' ? null : agentActivity(selected.id, jobs, now, timezone)}
-          onSave={save}
-          onTest={test}
-          onCancelNew={() => setCreation(null)}
-        />
-      )}
+        {selected && creation?.stage !== 'pick' && (
+          <AgentEditor
+            key={selected.id === '' ? 'new' : selected.id}
+            agent={selected}
+            isNew={selected.id === ''}
+            connectors={connectors}
+            settings={{ claudeBin }}
+            detect={detect}
+            detectedClaude={detectedClaude}
+            activity={selected.id === '' ? null : agentActivity(selected.id, jobs, now, timezone)}
+            onSave={save}
+            onTest={test}
+            onCancelNew={() => setCreation(null)}
+          />
+        )}
+      </div>
     </div>
   );
 }

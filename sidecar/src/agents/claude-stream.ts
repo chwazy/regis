@@ -2,6 +2,10 @@ import { z } from 'zod';
 import type { AgentEvent, AgentRunInput, ToolFlags } from './driver';
 
 const MAX_SUMMARY_LENGTH = 500;
+const LOGIN_FAILURE = /^Failed to authenticate\b/i;
+
+export const CLAUDE_LOGIN_MESSAGE =
+  'Claude Code n’est plus connecté (session expirée ou absente). Ouvre un terminal, lance « claude » puis « /login », et renvoie ton message.';
 
 const textBlock = z.object({ type: z.literal('text'), text: z.string() });
 const toolUseBlock = z.object({
@@ -108,9 +112,15 @@ function parseContentBlock(block: unknown): AgentEvent[] {
   return [];
 }
 
+export function isClaudeLoginFailure(text: string): boolean {
+  return LOGIN_FAILURE.test(text.trim());
+}
+
 function parseResult(result: z.infer<typeof resultEvent>): AgentEvent[] {
+  const loginFailure = result.is_error === true && isClaudeLoginFailure(result.result ?? '');
   return [
     { type: 'usage', ...accountUsage(result) },
+    ...(loginFailure ? [{ type: 'error' as const, message: CLAUDE_LOGIN_MESSAGE }] : []),
     {
       type: 'end',
       resultText: result.result ?? '',
