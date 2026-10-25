@@ -2,6 +2,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { NewJob } from '@regis/shared';
+import type { AgentDriver, AgentRunInput } from '../agents/driver';
 import { makeAgent } from '../agents/test-support';
 import { JobNotFoundError, JobNotResumableError } from './runner';
 import { createTestRunner, waitUntil, type TestRunner } from './test-support';
@@ -152,6 +153,38 @@ describe('JobRunner', () => {
     const job = await store.createJob({ ...newJob('done'), agentId: 'api', sessionId: 's1' });
 
     await expect(runner.resume(job.id, 'again')).rejects.toBeInstanceOf(JobNotResumableError);
+  });
+
+  it('replays the conversation to a runtime without sessions when resuming', async () => {
+    const inputs: AgentRunInput[] = [];
+    const historyDriver: AgentDriver = {
+      runtime: 'ollama',
+      supportsHistory: true,
+      run: async function* (input) {
+        await Promise.resolve();
+        inputs.push(input);
+        yield { type: 'message', text: `réponse ${inputs.length}` };
+        yield { type: 'end', resultText: `réponse ${inputs.length}`, isError: false };
+      },
+      test: () => Promise.resolve({ ok: true, latencyMs: 0, costUsd: 0 }),
+    };
+    const { runner } = setup({
+      agents: [makeAgent({ id: 'local', runtime: 'ollama' })],
+      drivers: { ollama: historyDriver },
+    });
+    const job = await runner.start({ agentId: 'local', title: 'Chat', prompt: 'Test test', kind: 'chat' });
+    await runner.waitForEnd(job.id);
+
+    await runner.resume(job.id, 'Quel modèle ?');
+    const second = await runner.waitForEnd(job.id);
+
+    expect(second.status).toBe('done');
+    expect(inputs[0]?.history).toBeUndefined();
+    expect(inputs[1]?.prompt).toBe('Quel modèle ?');
+    expect(inputs[1]?.history).toEqual([
+      { role: 'user', text: 'Test test' },
+      { role: 'assistant', text: 'réponse 1' },
+    ]);
   });
 
   it('resumes the same session with a new message and accumulates the cost', async () => {

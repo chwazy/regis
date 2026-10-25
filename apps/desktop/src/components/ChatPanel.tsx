@@ -15,7 +15,7 @@ import controls from './ui/controls.module.css';
 
 interface ChatPanelProps {
   chatJobId?: string | null;
-  onChatJobChange?: (chatJobId: string) => void;
+  onChatJobChange?: (chatJobId: string | null) => void;
 }
 
 const JOBS_LIMIT = 200;
@@ -171,9 +171,19 @@ export function ChatPanel({ chatJobId = null, onChatJobChange }: ChatPanelProps)
         {chatAgent && (
           <span className={styles.agent}>
             {chatAgent.name}
+            {chatAgent.model ? ` · ${chatAgent.model}` : ''}
             {chatAgent.isLocalOnly ? ' · local' : ''}
           </span>
         )}
+        <button
+          type="button"
+          className={`${controls.ghostSm} ${styles.clear}`}
+          disabled={currentId === null || sending}
+          title="Effacer la conversation et en commencer une nouvelle"
+          onClick={() => onChatJobChange?.(null)}
+        >
+          Effacer
+        </button>
         <button
           type="button"
           className={styles.expand}

@@ -30,6 +30,7 @@ export async function resolveOllamaUrl(getSetting: OllamaDeps['getSetting']): Pr
 
 export class OllamaDriver implements AgentDriver {
   readonly runtime = 'ollama' as const;
+  readonly supportsHistory = true;
 
   constructor(private readonly deps: OllamaDeps) {}
 
@@ -38,6 +39,7 @@ export class OllamaDriver implements AgentDriver {
     yield { type: 'start', model };
     const messages = [
       ...(input.systemPrompt ? [{ role: 'system', content: input.systemPrompt }] : []),
+      ...(input.history ?? []).map((turn) => ({ role: turn.role, content: turn.text })),
       { role: 'user', content: input.prompt },
     ];
     let reply: z.infer<typeof chatResponse>;
