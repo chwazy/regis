@@ -95,7 +95,7 @@ export function buildBriefPrompt(data: BriefData, retryReason?: string): string 
     activeJobs: data.activeJobs.map((job: Job) => ({ id: job.id, title: job.title, status: job.status })),
   };
   return [
-    'You write the daily brief of a personal command regis. Answer in French.',
+    'You write the daily brief of Régis, a personal command hub. Answer in French.',
     'Use ONLY the data below. Never write a number, an amount, an hour count or a name that is not in the data. Never invent a mail, an event or an invoice.',
     'Reply with a single JSON object and nothing else, with exactly this shape:',
     '{"headline": string (one short sentence), "priorities": [{"text": string, "ref"?: {"type": "item" | "approval" | "job", "id": string}}], "quickActions": [string]}',

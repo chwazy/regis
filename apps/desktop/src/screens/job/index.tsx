@@ -3,6 +3,8 @@ import { Link, useParams } from 'react-router';
 import type { Agent, Approval, Entity, Job, JobEvent } from '@regis/shared';
 import { ROUTES } from '../../app/routes';
 import { ApprovalCard, type ApprovalOutcome } from '../../components/ApprovalCard';
+import { ChatTranscript } from '../../components/ChatPanel';
+import { buildChatTimeline } from '../../components/chat-messages';
 import { JobStatusPill } from '../../components/JobStatusPill';
 import controls from '../../components/ui/controls.module.css';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
@@ -135,6 +137,10 @@ function JobView({ jobId }: { jobId: string | undefined }) {
   const autoOpened = useRef(false);
 
   const treeNodes = useMemo(() => buildJobTree(jobs, jobId), [jobs, jobId]);
+  const conversation = useMemo(
+    () => (job?.kind === 'chat' ? buildChatTimeline(job, events, jobs) : []),
+    [job, events, jobs],
+  );
   const startInfo = useMemo(() => readStartInfo(events), [events]);
   const parent = job?.parentId ? jobs.find((candidate) => candidate.id === job.parentId) : undefined;
   const agent = job ? agents.find((candidate) => candidate.id === job.agentId) : undefined;
@@ -289,7 +295,14 @@ function JobView({ jobId }: { jobId: string | undefined }) {
             />
           ))}
 
-          {job.resultText && job.status === 'done' && (
+          {job.kind === 'chat' && (
+            <section aria-label="Conversation" className={styles.card}>
+              <h2 className={styles.cardTitle}>Conversation</h2>
+              <ChatTranscript items={conversation} />
+            </section>
+          )}
+
+          {job.kind !== 'chat' && job.resultText && job.status === 'done' && (
             <section aria-label="Résultat" className={styles.card}>
               <h2 className={styles.cardTitle}>Résultat</h2>
               <p className={styles.resultText}>{job.resultText}</p>
@@ -300,7 +313,7 @@ function JobView({ jobId }: { jobId: string | undefined }) {
             <TerminalPane jobId={job.id} resume={terminal.resume} onEnded={() => setTerminal(null)} />
           )}
 
-          {!(terminal && agent?.mode === 'pty') && <JobTimeline events={events} />}
+          {job.kind !== 'chat' && !(terminal && agent?.mode === 'pty') && <JobTimeline events={events} />}
         </div>
 
         <aside aria-label="Métadonnées" className={styles.side}>

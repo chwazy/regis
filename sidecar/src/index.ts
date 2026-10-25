@@ -200,6 +200,7 @@ const jobStore: JobStore = {
   getJob: (id) => server.call<Job>('store.jobs.get', { id }),
   updateJob: (id, patch) => server.call<Job>('store.jobs.update', { id, patch }),
   appendEvent: (event: NewJobEvent) => server.call<JobEvent>('store.jobs.appendEvent', event),
+  listEvents: (jobId) => server.call<JobEvent[]>('store.jobs.listEvents', { jobId }),
   listJobs: (status) => server.call<Job[]>('store.jobs.list', status ? { status } : {}),
 };
 

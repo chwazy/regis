@@ -1,7 +1,7 @@
 import type { JobEvent } from '@regis/shared';
 import { formatClock } from '../../lib/format';
 import { useTimezone } from '../../lib/use-timezone';
-import { EVENT_KIND_LABELS, eventDetail } from './job-view';
+import { EVENT_KIND_LABELS, eventDetail, timelineSummaries } from './job-view';
 import styles from './job.module.css';
 
 interface JobTimelineProps {
@@ -22,6 +22,7 @@ const KIND_CLASS: Record<JobEvent['type'], string> = {
 
 export function JobTimeline({ events }: JobTimelineProps) {
   const timezone = useTimezone();
+  const summaries = timelineSummaries(events);
   return (
     <section aria-label="Déroulé" className={styles.card}>
       <div className={styles.cardHead}>
@@ -30,7 +31,7 @@ export function JobTimeline({ events }: JobTimelineProps) {
       </div>
       {events.length === 0 && <p className={styles.muted}>Aucun événement pour l’instant.</p>}
       <ol className={styles.steps}>
-        {events.map((event) => {
+        {events.map((event, index) => {
           const detail = eventDetail(event);
           return (
             <li key={event.id} className={styles.step}>
@@ -39,7 +40,7 @@ export function JobTimeline({ events }: JobTimelineProps) {
                 {EVENT_KIND_LABELS[event.type]}
               </span>
               <div className={styles.stepBody}>
-                <span>{event.summary}</span>
+                <span>{summaries[index]}</span>
                 {detail && <span className={styles.stepDetail}>{detail}</span>}
               </div>
             </li>

@@ -32,6 +32,7 @@ export interface AnthropicApiDeps {
 
 export class AnthropicApiDriver implements AgentDriver {
   readonly runtime = 'anthropic-api' as const;
+  readonly supportsHistory = true;
 
   constructor(private readonly deps: AnthropicApiDeps) {}
 
@@ -46,7 +47,10 @@ export class AnthropicApiDriver implements AgentDriver {
       input_schema: tool.inputSchema as Anthropic.Messages.Tool.InputSchema,
     }));
     const maxTurns = input.maxTurns ?? DEFAULT_MAX_TURNS;
-    const messages: Anthropic.Messages.MessageParam[] = [{ role: 'user', content: input.prompt }];
+    const messages: Anthropic.Messages.MessageParam[] = [
+      ...(input.history ?? []).map((turn) => ({ role: turn.role, content: turn.text })),
+      { role: 'user', content: input.prompt },
+    ];
     let lastText = '';
     yield { type: 'start', model };
 

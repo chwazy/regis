@@ -1,5 +1,10 @@
 import type { Agent, AgentRuntime, ToolInfo } from '@regis/shared';
 
+export interface ChatTurn {
+  role: 'user' | 'assistant';
+  text: string;
+}
+
 export interface AgentRunInput {
   jobId: string;
   agent: Agent;
@@ -8,6 +13,8 @@ export interface AgentRunInput {
   cwd: string;
   sessionId?: string;
   resume?: boolean;
+  // Échanges précédents, pour les runtimes sans session à reprendre.
+  history?: ChatTurn[];
   maxTurns?: number;
   jsonOutput?: boolean;
   signal: AbortSignal;
@@ -32,6 +39,7 @@ export interface AgentTestResult {
 export interface AgentDriver {
   readonly runtime: AgentRuntime;
   readonly supportsResume?: boolean;
+  readonly supportsHistory?: boolean;
   run(input: AgentRunInput): AsyncIterable<AgentEvent>;
   test(agent: Agent): Promise<AgentTestResult>;
 }
