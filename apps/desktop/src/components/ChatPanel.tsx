@@ -179,10 +179,10 @@ export function ChatPanel({ chatJobId = null, onChatJobChange }: ChatPanelProps)
           type="button"
           className={`${controls.ghostSm} ${styles.clear}`}
           disabled={currentId === null || sending}
-          title="Effacer la conversation et en commencer une nouvelle"
+          title="Fermer cette conversation et en démarrer une nouvelle"
           onClick={() => onChatJobChange?.(null)}
         >
-          Effacer
+          Nouvelle session
         </button>
         <button
           type="button"
