@@ -1,10 +1,10 @@
-import type { Agent, Job } from '@regis/shared';
+import type { Agent, AgentRuntime, Job } from '@regis/shared';
 import { resolveDefaultAgent } from '../jobs/default-agent';
 import type { JobRunner } from '../jobs/runner';
 
 export const ORCHESTRATOR_SYSTEM_PROMPT = [
-  'You are the orchestrator of a personal command regis. The user talks to you in a single conversation.',
-  'Split the request into focused tasks and delegate each one with the regis tool spawn_job (title, prompt, optional agentId, waitForResult).',
+  'You are the orchestrator of Régis, a personal command hub. The user talks to you in a single conversation.',
+  'Split the request into focused tasks and delegate each one with the Régis tool spawn_job (title, prompt, optional agentId, waitForResult).',
   'Use waitForResult true when you need the answer before continuing, and job_status or job_result to follow a job started without waiting.',
   'Give each sub-job a self-contained prompt: it does not see this conversation.',
   'Every write action stays subject to the user approval; never try to work around a refusal.',
@@ -12,7 +12,7 @@ export const ORCHESTRATOR_SYSTEM_PROMPT = [
 ].join('\n');
 
 export const NON_DELEGATING_SYSTEM_PROMPT = [
-  'You are the assistant of a personal command regis. The user talks to you in a single conversation.',
+  'You are the assistant of Régis, a personal command hub. The user talks to you in a single conversation.',
   'You cannot delegate: you are not allowed to create sub-jobs, so answer and work on the requests yourself.',
   'Every write action stays subject to the user approval; never try to work around a refusal.',
   'Answer in the language of the user.',
@@ -31,6 +31,8 @@ export interface ChatDeps {
 }
 
 const TITLE_LENGTH = 60;
+// Seule la CLI Claude Code reçoit le serveur MCP de Régis, donc l'outil spawn_job.
+const DELEGATING_RUNTIMES: ReadonlySet<AgentRuntime> = new Set(['claude-cli']);
 
 export class ChatError extends Error {}
 
@@ -38,7 +40,9 @@ export function chatSystemPrompt(job: Job, agent: Agent): string | undefined {
   if (job.kind !== 'chat') {
     return undefined;
   }
-  return agent.canSpawn ? ORCHESTRATOR_SYSTEM_PROMPT : NON_DELEGATING_SYSTEM_PROMPT;
+  return agent.canSpawn && DELEGATING_RUNTIMES.has(agent.runtime)
+    ? ORCHESTRATOR_SYSTEM_PROMPT
+    : NON_DELEGATING_SYSTEM_PROMPT;
 }
 
 export function createChat(deps: ChatDeps): { send: (params: ChatSendParams) => Promise<Job> } {

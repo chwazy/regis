@@ -71,9 +71,17 @@ describe('orchestrator chat', () => {
   });
 
   it('gives only chat jobs the orchestrator system prompt', () => {
-    const spawner = { canSpawn: true } as never;
+    const spawner = { canSpawn: true, runtime: 'claude-cli' } as never;
     expect(chatSystemPrompt({ kind: 'chat' } as never, spawner)).toBe(ORCHESTRATOR_SYSTEM_PROMPT);
     expect(chatSystemPrompt({ kind: 'task' } as never, spawner)).toBeUndefined();
+  });
+
+  it('does not tell an agent without the regis tools to delegate, even with can_spawn', () => {
+    for (const runtime of ['ollama', 'anthropic-api'] as const) {
+      expect(chatSystemPrompt({ kind: 'chat' } as never, { canSpawn: true, runtime } as never)).toBe(
+        NON_DELEGATING_SYSTEM_PROMPT,
+      );
+    }
   });
 
   it('does not tell an agent without can_spawn to use spawn_job', () => {
