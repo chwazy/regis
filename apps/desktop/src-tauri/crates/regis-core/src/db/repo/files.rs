@@ -1,7 +1,7 @@
 use rusqlite::types::Value;
 use rusqlite::Row;
 
-use super::{column_json, json_text, opt_int, opt_text, text, Record, RepoError};
+use super::{column_json, flag, json_text, opt_int, opt_text, text, Record, RepoError};
 use regis_model::{FileEntry, FileSource, Template};
 
 impl Record for FileSource {
@@ -15,6 +15,7 @@ impl Record for FileSource {
         "state",
         "last_scan_at",
         "connector_id",
+        "indexed",
     ];
 
     fn from_row(row: &Row<'_>) -> rusqlite::Result<Self> {
@@ -27,6 +28,7 @@ impl Record for FileSource {
             state: row.get("state")?,
             last_scan_at: row.get("last_scan_at")?,
             connector_id: row.get("connector_id")?,
+            indexed: row.get("indexed")?,
         })
     }
 
@@ -40,6 +42,7 @@ impl Record for FileSource {
             text(&self.state),
             opt_text(&self.last_scan_at),
             opt_text(&self.connector_id),
+            flag(self.indexed),
         ])
     }
 }

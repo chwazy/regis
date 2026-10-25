@@ -180,8 +180,13 @@ export function buildClaudeArgs(
   mcpConfigPath: string,
   toolFlags: ToolFlags,
   permissionTool?: string,
+  referenceDirs: string[] = [],
 ): string[] {
   const args = ['-p', '--output-format', 'stream-json', '--verbose'];
+  // Liste variadique : toujours suivie d'une autre option.
+  if (referenceDirs.length > 0) {
+    args.push('--add-dir', ...referenceDirs);
+  }
   args.push('--setting-sources', 'project', '--strict-mcp-config', '--mcp-config', mcpConfigPath);
   if (input.agent.model) {
     args.push('--model', input.agent.model);

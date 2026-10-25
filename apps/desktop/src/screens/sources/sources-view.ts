@@ -13,6 +13,9 @@ export interface SourceState {
 }
 
 export function sourceState(source: FileSourceInfo): SourceState {
+  if (!source.indexed) {
+    return { text: 'Référence', tone: 'muted' };
+  }
   switch (source.state) {
     case 'scanning':
       return { text: 'Scan en cours', tone: 'accent' };

@@ -23,6 +23,7 @@ export interface AgentRegistryDeps {
   onLog: (line: string) => void;
   policy?: AgentToolPolicy;
   regisEndpoint?: () => Promise<RegisMcpEndpoint>;
+  listReferenceDirs?: () => Promise<string[]>;
   fetch?: typeof fetch;
   env?: NodeJS.ProcessEnv;
   extraEnv?: Record<string, string>;
@@ -47,6 +48,7 @@ export function createDriverRegistry(deps: AgentRegistryDeps): { getDriver: (age
           ...(deps.resolveLaunch ? { resolveLaunch: deps.resolveLaunch } : {}),
           policy,
           ...(deps.regisEndpoint ? { regisEndpoint: deps.regisEndpoint } : {}),
+          ...(deps.listReferenceDirs ? { listReferenceDirs: deps.listReferenceDirs } : {}),
           onLog: deps.onLog,
           ...(deps.extraEnv ? { extraEnv: deps.extraEnv } : {}),
         });

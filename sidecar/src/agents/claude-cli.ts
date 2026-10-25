@@ -34,6 +34,8 @@ export interface ClaudeCliDeps {
   resolveLaunch?: (connector: Connector) => Promise<ConnectorLaunch | null>;
   policy: AgentToolPolicy;
   regisEndpoint?: () => Promise<RegisMcpEndpoint>;
+  /** Dossiers des sources de référence, lisibles par l'agent sans être indexés. */
+  listReferenceDirs?: () => Promise<string[]>;
   onLog: (line: string) => void;
   extraEnv?: Record<string, string>;
 }
@@ -97,6 +99,7 @@ export class ClaudeCliDriver implements AgentDriver {
         mcpConfigPath,
         await this.deps.policy.buildToolFlags(input.agent, tools),
         this.deps.regisEndpoint ? this.deps.policy.permissionTool : undefined,
+        (await this.deps.listReferenceDirs?.()) ?? [],
       );
       yield* this.stream(bin, args, input, { ...buildClaudeEnv(secretEnv), ...this.deps.extraEnv });
     } finally {

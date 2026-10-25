@@ -55,6 +55,7 @@ pub struct FileSourceInfo {
     pub poll_minutes: Option<i64>,
     pub state: String,
     pub last_scan_at: Option<String>,
+    pub indexed: bool,
     #[ts(type = "number")]
     pub file_count: i64,
     #[ts(type = "number")]
@@ -65,7 +66,7 @@ pub struct FileSourceInfo {
     pub unclassified_count: i64,
 }
 
-const SOURCE_INFO_SQL: &str = "SELECT s.id, s.kind, s.path, s.watch_mode, s.poll_minutes, s.state, s.last_scan_at,
+const SOURCE_INFO_SQL: &str = "SELECT s.id, s.kind, s.path, s.watch_mode, s.poll_minutes, s.state, s.last_scan_at, s.indexed,
         (SELECT COUNT(*) FROM files f WHERE f.source_id = s.id),
         (SELECT COUNT(*) FROM files f WHERE f.source_id = s.id AND f.status = 'indexed'),
         (SELECT COUNT(*) FROM files f WHERE f.source_id = s.id AND f.status = 'pending'),
@@ -82,10 +83,11 @@ fn info_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<FileSourceInfo> {
         poll_minutes: row.get(4)?,
         state: row.get(5)?,
         last_scan_at: row.get(6)?,
-        file_count: row.get(7)?,
-        indexed_count: row.get(8)?,
-        pending_count: row.get(9)?,
-        unclassified_count: row.get(10)?,
+        indexed: row.get(7)?,
+        file_count: row.get(8)?,
+        indexed_count: row.get(9)?,
+        pending_count: row.get(10)?,
+        unclassified_count: row.get(11)?,
     })
 }
 
@@ -143,6 +145,7 @@ pub fn ensure_regis_sources(db: &Db, data_dir: &Path) -> Result<(), SourceError>
                         state: STATE_UNKNOWN.to_owned(),
                         last_scan_at: None,
                         connector_id: None,
+                        indexed: true,
                     },
                 )?;
             }
@@ -184,6 +187,7 @@ pub fn add_source(
     path: &str,
     watch_mode: Option<&str>,
     poll_minutes: Option<i64>,
+    indexed: bool,
 ) -> Result<FileSource, SourceError> {
     let path = path.trim();
     if path.is_empty() {
@@ -230,6 +234,7 @@ pub fn add_source(
         state: STATE_UNKNOWN.to_owned(),
         last_scan_at: None,
         connector_id: None,
+        indexed,
     };
     db.with_conn(|conn| {
         let duplicates: i64 = conn.query_row(
@@ -526,8 +531,8 @@ mod tests {
         }
         let before = snapshot(&watched);
         let db = test_db("never-writes");
-        let source =
-            add_source(&db, "local", &watched.to_string_lossy(), None, None).expect("add source");
+        let source = add_source(&db, "local", &watched.to_string_lossy(), None, None, true)
+            .expect("add source");
         let mock = MockOllama::start();
 
         let report = scan_source(&db, &source.id, u64::MAX).expect("scan");
@@ -642,13 +647,15 @@ mod tests {
     fn source_validation() {
         let db = test_db("validation");
         let dir = temp_dir("validation-dir");
-        assert!(add_source(&db, "local", "", None, None).is_err());
-        assert!(add_source(&db, "local", "/definitely/missing", None, None).is_err());
-        assert!(add_source(&db, "cloud", "OneDrive", None, None).is_err());
-        let source = add_source(&db, "local", &dir.to_string_lossy(), None, None).expect("add");
+        assert!(add_source(&db, "local", "", None, None, true).is_err());
+        assert!(add_source(&db, "local", "/definitely/missing", None, None, true).is_err());
+        assert!(add_source(&db, "cloud", "OneDrive", None, None, true).is_err());
+        let source =
+            add_source(&db, "local", &dir.to_string_lossy(), None, None, true).expect("add");
         assert_eq!(source.watch_mode, "realtime");
-        assert!(add_source(&db, "local", &dir.to_string_lossy(), None, None).is_err());
-        let network = add_source(&db, "smb", r"\\nas-missing\share", None, None).expect("smb");
+        assert!(add_source(&db, "local", &dir.to_string_lossy(), None, None, true).is_err());
+        let network =
+            add_source(&db, "smb", r"\\nas-missing\share", None, None, true).expect("smb");
         assert_eq!(
             (network.watch_mode.as_str(), network.poll_minutes),
             ("poll", Some(10))
