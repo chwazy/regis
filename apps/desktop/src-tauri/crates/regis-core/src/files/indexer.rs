@@ -478,7 +478,8 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).expect("temp dir");
         let db = test_db(&format!("indexer-{name}"));
-        let source = add_source(&db, "local", &dir.to_string_lossy(), None, None).expect("source");
+        let source =
+            add_source(&db, "local", &dir.to_string_lossy(), None, None, true).expect("source");
         Fixture {
             db,
             dir,

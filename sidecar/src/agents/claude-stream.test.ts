@@ -120,6 +120,17 @@ describe('parseClaudeStreamLine', () => {
 });
 
 describe('buildClaudeArgs', () => {
+  it('opens the reference folders to the agent with --add-dir, and nothing without them', () => {
+    const withDirs = buildClaudeArgs(makeRunInput(), 'mcp.json', NO_TOOL_FLAGS, undefined, [
+      'C:/git/regis',
+      'C:/git/spellcache',
+    ]);
+    const index = withDirs.indexOf('--add-dir');
+    expect(withDirs.slice(index, index + 3)).toEqual(['--add-dir', 'C:/git/regis', 'C:/git/spellcache']);
+    expect(withDirs[index + 3]?.startsWith('--')).toBe(true);
+    expect(buildClaudeArgs(makeRunInput(), 'mcp.json', NO_TOOL_FLAGS)).not.toContain('--add-dir');
+  });
+
   it('always contains the headless stream-json flags', () => {
     const args = buildClaudeArgs(makeRunInput(), 'mcp.json', NO_TOOL_FLAGS);
 

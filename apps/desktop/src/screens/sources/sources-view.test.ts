@@ -10,6 +10,7 @@ const base: FileSourceInfo = {
   pollMinutes: null,
   state: 'idle',
   lastScanAt: null,
+  indexed: true,
   fileCount: 10,
   indexedCount: 10,
   pendingCount: 0,
@@ -33,5 +34,9 @@ describe('sources view helpers', () => {
     });
     expect(sourceState({ ...base, state: 'waiting_ollama' }).text).toBe('En attente d’Ollama');
     expect(sourceState({ ...base, state: 'offline' }).tone).toBe('warn');
+    expect(sourceState({ ...base, indexed: false, state: 'unknown' })).toEqual({
+      text: 'Référence',
+      tone: 'muted',
+    });
   });
 });

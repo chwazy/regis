@@ -30,6 +30,9 @@ const KIND_NOTES: Record<string, string> = {
 const DEFAULT_POLL_MINUTES = 10;
 
 function watchLabel(source: FileSourceInfo): string {
+  if (!source.indexed) {
+    return '—';
+  }
   if (source.watchMode === 'poll') {
     const scan = `scan ${String(source.pollMinutes ?? DEFAULT_POLL_MINUTES)} min`;
     return source.kind === 'smb' ? `${scan} + notif.` : scan;
@@ -38,7 +41,7 @@ function watchLabel(source: FileSourceInfo): string {
 }
 
 function countLabel(source: FileSourceInfo): string {
-  if (source.state === 'offline' && source.fileCount === 0) {
+  if (!source.indexed || (source.state === 'offline' && source.fileCount === 0)) {
     return '—';
   }
   return source.fileCount.toLocaleString('fr-CH');
@@ -156,13 +159,15 @@ export function SourcesSection() {
                   </td>
                   <td>
                     <div className={styles.rowActions}>
-                      <button
-                        type="button"
-                        className={controls.ghostSm}
-                        onClick={() => void run('rescan_source', source.id)}
-                      >
-                        Rescanner
-                      </button>
+                      {source.indexed && (
+                        <button
+                          type="button"
+                          className={controls.ghostSm}
+                          onClick={() => void run('rescan_source', source.id)}
+                        >
+                          Rescanner
+                        </button>
+                      )}
                       {source.kind !== 'regis' && (
                         <button
                           type="button"

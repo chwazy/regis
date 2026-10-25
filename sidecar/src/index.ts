@@ -9,6 +9,7 @@ import type {
   GlobalSearchResult,
   RegisEvent,
   RegisTopic,
+  FileSource,
   Item,
   Job,
   JobEvent,
@@ -271,6 +272,10 @@ const { getDriver } = createDriverRegistry({
   onLog: toStderr,
   policy: toolPolicy,
   regisEndpoint: () => regisServer.start(),
+  listReferenceDirs: async () =>
+    (await server.call<FileSource[]>('store.sources.list', {}))
+      .filter((source) => !source.indexed)
+      .map((source) => source.path),
   ...(demoMode ? { extraEnv: demoAgentEnv(process.env) } : {}),
 });
 

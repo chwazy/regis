@@ -125,7 +125,7 @@ bridge_commands! {
     state settings::get_app_info => (),
     app_state settings::set_data_dir => (path, resume_url),
     state files::list_file_sources => (),
-    state files::add_file_source => (kind, path, watch_mode, poll_minutes),
+    state files::add_file_source => (kind, path, watch_mode, poll_minutes, indexed),
     state files::remove_file_source => (id),
     state files::rescan_source => (id),
     state files::import_files => (paths),

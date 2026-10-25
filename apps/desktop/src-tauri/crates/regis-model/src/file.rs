@@ -14,6 +14,7 @@ pub struct FileSource {
     pub state: String,
     pub last_scan_at: Option<String>,
     pub connector_id: Option<String>,
+    pub indexed: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]

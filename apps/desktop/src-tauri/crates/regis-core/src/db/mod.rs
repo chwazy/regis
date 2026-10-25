@@ -16,12 +16,20 @@ struct Migration {
     rebuilds_tables: bool,
 }
 
-const MIGRATIONS: &[Migration] = &[Migration {
-    version: 1,
-    name: "0001_init",
-    sql: include_str!("migrations/0001_init.sql"),
-    rebuilds_tables: false,
-}];
+const MIGRATIONS: &[Migration] = &[
+    Migration {
+        version: 1,
+        name: "0001_init",
+        sql: include_str!("migrations/0001_init.sql"),
+        rebuilds_tables: false,
+    },
+    Migration {
+        version: 2,
+        name: "0002_reference_sources",
+        sql: include_str!("migrations/0002_reference_sources.sql"),
+        rebuilds_tables: false,
+    },
+];
 
 type AutoExtensionInit = unsafe extern "C" fn(
     *mut ffi::sqlite3,
@@ -203,7 +211,7 @@ mod tests {
     fn open_applies_migrations_and_loads_vec() {
         let path = temp_db_path("migrations");
         let db = Db::open(&path).expect("open db");
-        assert_eq!(db.schema_version().expect("schema version"), 1);
+        assert_eq!(db.schema_version().expect("schema version"), 2);
         let vec_version = db.vec_version().expect("vec version");
         assert!(
             vec_version.starts_with('v'),
@@ -211,7 +219,7 @@ mod tests {
         );
         drop(db);
         let reopened = Db::open(&path).expect("reopen db");
-        assert_eq!(reopened.schema_version().expect("schema version"), 1);
+        assert_eq!(reopened.schema_version().expect("schema version"), 2);
     }
 
     #[test]

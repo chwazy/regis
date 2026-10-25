@@ -348,9 +348,11 @@ async fn run(
 }
 
 fn reload_sources(db: &Db, commands: &mpsc::UnboundedSender<Command>, schedule: &mut Schedule) {
-    let Ok(sources) = sources::list_sources(db) else {
+    let Ok(mut sources) = sources::list_sources(db) else {
         return;
     };
+    // Une source de référence n'est ni surveillée ni scannée.
+    sources.retain(|info| info.indexed);
     let known: HashSet<&str> = sources.iter().map(|info| info.id.as_str()).collect();
     schedule
         .watchers
@@ -452,9 +454,49 @@ mod tests {
     }
 
     #[test]
+    fn reference_sources_are_neither_watched_nor_scheduled() {
+        let reference_dir = temp_dir("reference-source");
+        let indexed_dir = temp_dir("indexed-source");
+        let db = test_db("reference-source");
+        let reference = add_source(
+            &db,
+            "local",
+            &reference_dir.to_string_lossy(),
+            None,
+            None,
+            false,
+        )
+        .expect("add reference");
+        let indexed = add_source(
+            &db,
+            "local",
+            &indexed_dir.to_string_lossy(),
+            None,
+            None,
+            true,
+        )
+        .expect("add");
+        let (commands, _receiver) = mpsc::unbounded_channel();
+        let mut schedule = Schedule {
+            watchers: HashMap::new(),
+            next_poll: HashMap::new(),
+            dirty: HashMap::new(),
+            forced: HashSet::new(),
+        };
+
+        reload_sources(&db, &commands, &mut schedule);
+
+        assert!(!reference.indexed);
+        assert!(schedule.next_poll.contains_key(&indexed.id));
+        assert!(!schedule.next_poll.contains_key(&reference.id));
+        assert!(!schedule.forced.contains(&reference.id));
+        assert!(!schedule.watchers.contains_key(&reference.id));
+    }
+
+    #[test]
     fn unreachable_network_share_goes_offline_and_keeps_its_files() {
         let db = test_db("offline-share");
-        let source = add_source(&db, "smb", r"\\nas-missing\plans", None, None).expect("add");
+        let source = add_source(&db, "smb", r"\\nas-missing\plans", None, None, true).expect("add");
         db.with_conn(|conn| {
             repo::upsert(
                 conn,
@@ -499,7 +541,8 @@ mod tests {
     fn scan_reports_additions_changes_and_removals() {
         let dir = temp_dir("scan-report");
         let db = test_db("scan-report");
-        let source = add_source(&db, "local", &dir.to_string_lossy(), None, None).expect("add");
+        let source =
+            add_source(&db, "local", &dir.to_string_lossy(), None, None, true).expect("add");
         std::fs::create_dir_all(dir.join("sub")).expect("subdir");
         std::fs::write(dir.join("a.md"), "aaa").expect("write");
         std::fs::write(dir.join("sub").join("b.txt"), "bbb").expect("write");
@@ -555,7 +598,7 @@ mod tests {
             .expect("setting");
         let sink = Arc::new(CollectingSink(Mutex::new(Vec::new())));
         let handle = spawn(db.clone(), EventBus::new(sink.clone()));
-        add_source(&db, "local", &dir.to_string_lossy(), None, None).expect("add");
+        add_source(&db, "local", &dir.to_string_lossy(), None, None, true).expect("add");
         handle.reload();
 
         let deadline = Instant::now() + Duration::from_secs(20);

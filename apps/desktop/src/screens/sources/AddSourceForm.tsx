@@ -20,6 +20,7 @@ export function AddSourceForm({ onAdded, onError, compact = false }: AddSourceFo
   const [kind, setKind] = useState<NewSourceKind>('local');
   const [path, setPath] = useState('');
   const [pollMinutes, setPollMinutes] = useState(DEFAULT_POLL_MINUTES);
+  const [indexed, setIndexed] = useState(true);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -29,6 +30,7 @@ export function AddSourceForm({ onAdded, onError, compact = false }: AddSourceFo
         path,
         watchMode: kind === 'smb' ? 'poll' : 'realtime',
         pollMinutes: kind === 'smb' ? pollMinutes : null,
+        indexed,
       });
       setPath('');
       await onAdded();
@@ -72,6 +74,13 @@ export function AddSourceForm({ onAdded, onError, compact = false }: AddSourceFo
           />
         </label>
       )}
+      <label
+        className={styles.checkbox}
+        title="Décoché : le dossier sert de référence aux agents, sans scan ni indexation."
+      >
+        <input type="checkbox" checked={indexed} onChange={(event) => setIndexed(event.target.checked)} />
+        Indexer le contenu
+      </label>
       <button type="submit" className={controls.primary}>
         Ajouter
       </button>

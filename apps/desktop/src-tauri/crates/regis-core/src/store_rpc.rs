@@ -13,8 +13,8 @@ use crate::modules::{is_enabled, LocalModuleId};
 use crate::sidecar::{HostError, HostHandler, SidecarClient};
 use regis_model::{
     Agent, Approval, ApprovalStatus, Brief, Connector, Entity, EntityKind, Fact, FactStatus,
-    FileEntry, ItemKind, ItemUpsert, Job, JobEvent, JobStatus, Link, LinkProposalRow, NewApproval,
-    NewJob, NewJobEvent, RoutingRule, Template, ToolPolicy,
+    FileEntry, FileSource, ItemKind, ItemUpsert, Job, JobEvent, JobStatus, Link, LinkProposalRow,
+    NewApproval, NewJob, NewJobEvent, RoutingRule, Template, ToolPolicy,
 };
 
 #[derive(Clone)]
@@ -56,6 +56,7 @@ const METHODS: &[(&str, StoreMethod)] = &[
     ("store.settings.set", settings_set),
     ("store.settings.listPrefix", settings_list_prefix),
     ("store.files.list", files_list),
+    ("store.sources.list", sources_list),
     ("store.files.get", files_get),
     ("store.files.registerGenerated", files_register_generated),
     ("store.templates.get", templates_get),
@@ -530,6 +531,11 @@ fn settings_list_prefix(context: &StoreContext, params: Value) -> Result<Value, 
 fn files_list(context: &StoreContext, _params: Value) -> Result<Value, HostError> {
     let files: Vec<FileEntry> = context.db.with_conn(|conn| repo::list(conn))?;
     to_json(&files)
+}
+
+fn sources_list(context: &StoreContext, _params: Value) -> Result<Value, HostError> {
+    let sources: Vec<FileSource> = context.db.with_conn(|conn| repo::list(conn))?;
+    to_json(&sources)
 }
 
 fn files_get(context: &StoreContext, params: Value) -> Result<Value, HostError> {

@@ -26,9 +26,17 @@ pub async fn add_file_source(
     path: String,
     watch_mode: Option<String>,
     poll_minutes: Option<i64>,
+    indexed: Option<bool>,
 ) -> Result<FileSourceInfo, String> {
-    let source = sources::add_source(&state.db, &kind, &path, watch_mode.as_deref(), poll_minutes)
-        .map_err(describe)?;
+    let source = sources::add_source(
+        &state.db,
+        &kind,
+        &path,
+        watch_mode.as_deref(),
+        poll_minutes,
+        indexed.unwrap_or(true),
+    )
+    .map_err(describe)?;
     state.files.reload();
     state
         .db
@@ -45,7 +53,10 @@ pub async fn remove_file_source(state: State<'_, AppState>, id: String) -> Resul
 
 #[tauri::command]
 pub async fn rescan_source(state: State<'_, AppState>, id: String) -> Result<(), String> {
-    sources::get_source(&state.db, &id).map_err(describe)?;
+    let source = sources::get_source(&state.db, &id).map_err(describe)?;
+    if !source.indexed {
+        return Err("Une source de référence n’est pas indexée".to_owned());
+    }
     state.files.rescan(&id);
     Ok(())
 }
