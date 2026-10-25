@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { calendarDay } from '../../calendar-day';
 import { OdooRpcError, type OdooClient } from './client';
 
 export interface TimesheetCreateInput {
@@ -68,12 +69,7 @@ export interface ToolCallResult {
 }
 
 function calendarDateDaysAgo(days: number, now: Date, timeZone: string): string {
-  const today = new Intl.DateTimeFormat('en-CA', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(now);
+  const today = calendarDay(now, timeZone);
   const [year, month, day] = today.split('-').map(Number);
   return new Date(Date.UTC(year ?? 0, (month ?? 1) - 1, (day ?? 1) - days)).toISOString().slice(0, 10);
 }
