@@ -83,3 +83,16 @@
   margin: 0;
   font-size: 13px;
 }
+
+.error {
+  margin: 0;
+  font-size: 12px;
+  color: var(--danger);
+}
+
+.notes {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: pre-wrap;
+}

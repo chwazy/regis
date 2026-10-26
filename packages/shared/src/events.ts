@@ -16,7 +16,8 @@ export type RegisTopic =
   | 'recording.segment'
   | 'recording.level'
   | 'recording.backlog'
-  | 'settings.changed';
+  | 'settings.changed'
+  | 'update.download.progress';
 export interface RegisEvent<T = unknown> {
   topic: RegisTopic;
   payload: T;

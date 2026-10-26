@@ -32,6 +32,7 @@ pub struct AppState {
     pub modules: Arc<regis_voice::modules::ModuleManager>,
     pub dictation: regis_voice::audio::dictation::DictationManager,
     pub recording: regis_voice::audio::recording::RecordingManager,
+    pub pending_update: commands::updater::PendingUpdate,
 }
 
 const ODOO_MCP_BIN_ENV: &str = "REGIS_ODOO_MCP_BIN";
@@ -148,6 +149,7 @@ pub fn run() {
     }));
     builder
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             commands::app_info,
             commands::sidecar_call,
@@ -221,7 +223,9 @@ pub fn run() {
             commands::recording::recording_delete_audio,
             commands::recording::minutes_get,
             commands::recording::minutes_generate,
-            commands::recording::minutes_export
+            commands::recording::minutes_export,
+            commands::updater::update_check,
+            commands::updater::update_install
         ])
         .setup(|app| {
             let handle = app.handle().clone();
@@ -314,6 +318,7 @@ pub fn run() {
                 modules,
                 dictation,
                 recording,
+                pending_update: Default::default(),
             });
             #[cfg(debug_assertions)]
             dev_bridge::spawn(handle.clone());

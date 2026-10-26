@@ -80,4 +80,6 @@ export type { TemplateUse } from './generated/TemplateUse';
 export type { TimelineEntry } from './generated/TimelineEntry';
 export type { TranscriptSegment } from './generated/TranscriptSegment';
 export type { ToolPolicy } from './generated/ToolPolicy';
+export type { UpdateInfo } from './generated/UpdateInfo';
+export type { UpdateProgress } from './generated/UpdateProgress';
 export type { Widget } from './generated/Widget';
