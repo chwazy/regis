@@ -45,7 +45,21 @@ if (missing.length > 0) {
   fail(`binaire(s) externalBin manquant(s) :\n  ${missing.join('\n  ')}`);
 }
 
-run('npm', ['run', 'tauri', '-w', '@regis/desktop', '--', 'build', '--bundles', bundles.join(',')]);
+// Artefacts signés pour la mise à jour automatique, seulement si la clé est fournie (CI de release).
+const updaterConfig = process.env.TAURI_SIGNING_PRIVATE_KEY
+  ? ['--config', join(tauriDir, 'tauri.updater.conf.json')]
+  : [];
+run('npm', [
+  'run',
+  'tauri',
+  '-w',
+  '@regis/desktop',
+  '--',
+  'build',
+  '--bundles',
+  bundles.join(','),
+  ...updaterConfig,
+]);
 
 const bundleRoot = join(tauriDir, 'target', 'release', 'bundle');
 console.log('\nArtefacts :');

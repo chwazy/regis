@@ -9,6 +9,7 @@ pub mod pty;
 pub mod recording;
 pub mod settings;
 pub mod templates;
+pub mod updater;
 
 use std::time::Duration;
 

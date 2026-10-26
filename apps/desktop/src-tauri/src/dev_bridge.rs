@@ -21,7 +21,7 @@ use tokio::net::TcpListener;
 
 use crate::commands::{
     self, audio, brain, dashboard, data, files, meetings, modules, pty, recording, settings,
-    templates,
+    templates, updater,
 };
 use crate::AppState;
 
@@ -174,6 +174,8 @@ bridge_commands! {
     state recording::minutes_get => (transcript_item_id),
     state recording::minutes_generate => (transcript_item_id),
     state recording::minutes_export => (minutes_item_id, template_id),
+    app_state updater::update_check => (),
+    app_state updater::update_install => (),
 }
 
 fn command_name(command_path: &'static str) -> &'static str {

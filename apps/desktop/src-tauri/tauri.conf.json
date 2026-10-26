@@ -51,5 +51,16 @@
         "installerHooks": "windows/installer-hooks.nsh"
       }
     }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDdDM0QyODA3NjE1N0EyRkYKUldUL29sZGhCeWc5Zk5GZ1RKVkU2RHpnZ3p4aFVidmpqNGJhR3hkUnk3SWNlcDVUeGdGMWkyQXIK",
+      "endpoints": [
+        "https://github.com/chwazy/regis/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }

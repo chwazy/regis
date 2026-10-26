@@ -20,6 +20,7 @@ import {
   type UiScreens,
 } from '../../lib/ui-screens';
 import styles from './settings.module.css';
+import { UpdateStatus } from './UpdateStatus';
 
 const TIMEZONE_KEY = 'app.timezone';
 const DEFAULT_WRITE_KEY = 'policy.defaultWrite';
@@ -246,6 +247,10 @@ export default function SettingsScreen() {
         <dl className={styles.facts}>
           <dt>Version</dt>
           <dd>{appVersion ?? info?.version ?? '…'}</dd>
+          <dt>Mises à jour</dt>
+          <dd>
+            <UpdateStatus />
+          </dd>
           <dt>Dossier de données</dt>
           <dd className={styles.mono}>{info?.dataDir ?? '…'}</dd>
           <dt>Mode démo</dt>
