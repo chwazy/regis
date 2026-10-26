@@ -21,7 +21,7 @@ function demoEnv() {
   return {
     REGIS_DEMO: '1',
     REGIS_DATA_DIR: dataDir,
-    REGIS_CLAUDE_BIN: join(repoRoot, 'tests', 'fake-bins', 'claude'),
+    REGIS_CLAUDE_BIN: join(repoRoot, 'tests', 'fake-bins', 'claude.mjs'),
     FAKE_CLAUDE_FIXTURE: join(repoRoot, 'tests', 'fixtures', 'demo', 'agent-reply.ndjson'),
     FAKE_CLAUDE_MINUTES_FIXTURE: join(repoRoot, 'tests', 'fixtures', 'demo', 'minutes-reply.ndjson'),
     FAKE_CLAUDE_DELAY_MS: DEMO_AGENT_DELAY_MS,

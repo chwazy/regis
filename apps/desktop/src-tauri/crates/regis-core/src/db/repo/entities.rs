@@ -2,7 +2,7 @@ use rusqlite::types::Value;
 use rusqlite::Row;
 
 use super::{column_enum, column_json, enum_text, json_text, opt_real, text, Record, RepoError};
-use regis_model::{Entity, Fact, Link};
+use regis_model::{Entity, EntityResource, Fact, Link};
 
 impl Record for Entity {
     const TABLE: &'static str = "entities";
@@ -116,6 +116,34 @@ impl Record for Fact {
             text(&self.source_type),
             text(&self.source_id),
             enum_text(&self.status)?,
+            text(&self.created_at),
+        ])
+    }
+}
+
+impl Record for EntityResource {
+    const TABLE: &'static str = "entity_resources";
+    const COLUMNS: &'static [&'static str] =
+        &["id", "entity_id", "kind", "label", "value", "created_at"];
+
+    fn from_row(row: &Row<'_>) -> rusqlite::Result<Self> {
+        Ok(EntityResource {
+            id: row.get("id")?,
+            entity_id: row.get("entity_id")?,
+            kind: column_enum(row, "kind")?,
+            label: row.get("label")?,
+            value: row.get("value")?,
+            created_at: row.get("created_at")?,
+        })
+    }
+
+    fn values(&self) -> Result<Vec<Value>, RepoError> {
+        Ok(vec![
+            text(&self.id),
+            text(&self.entity_id),
+            enum_text(&self.kind)?,
+            self.label.as_deref().map_or(Value::Null, text),
+            text(&self.value),
             text(&self.created_at),
         ])
     }

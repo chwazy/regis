@@ -38,6 +38,16 @@ function renameLastSegment(filePath, newName) {
 
 export function buildResponse(options, request) {
   if (
+    options.behavior === 'allow' &&
+    request?.tool_name === 'AskUserQuestion' &&
+    Array.isArray(request?.input?.questions)
+  ) {
+    const answers = Object.fromEntries(
+      request.input.questions.map((question) => [question.question, question.options?.[0]?.label ?? '']),
+    );
+    return { behavior: 'allow', updatedInput: { ...request.input, answers } };
+  }
+  if (
     options.renameTo &&
     options.behavior === 'allow' &&
     request?.tool_name?.endsWith('__write_file') &&

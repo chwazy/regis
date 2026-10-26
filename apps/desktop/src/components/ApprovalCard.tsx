@@ -4,12 +4,14 @@ import { errorMessage, formatCalendarDay, formatHours } from '../lib/format';
 import { ErrorMessage } from './ui/Feedback';
 import controls from './ui/controls.module.css';
 import {
-  approvalTitle,
+  approvalHeading,
   parseEditedInput,
   readApprovalPreview,
   shortToolName,
   type ViewPreview,
 } from './approval-labels';
+import { answeredInput, readUserQuestions, type UserQuestion } from './user-question';
+import { UserQuestionForm } from './UserQuestionForm';
 import styles from './ApprovalCard.module.css';
 
 export interface ApprovalOutcome {
@@ -76,12 +78,50 @@ function PreviewBody({ preview }: { preview: ViewPreview }) {
   return <pre className={styles.json}>{preview.json}</pre>;
 }
 
-export function ApprovalDetail({
+function QuestionDetail({
   approval,
+  questions,
   onResolve,
-  scrollClassName,
-  shortcuts = false,
-}: ApprovalDetailProps) {
+}: ApprovalCardProps & { questions: UserQuestion[] }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = async (outcome: ApprovalOutcome) => {
+    setBusy(true);
+    setError(null);
+    try {
+      await onResolve(outcome);
+    } catch (reason: unknown) {
+      setError(errorMessage(reason));
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className={styles.detail}>
+      <UserQuestionForm
+        questions={questions}
+        busy={busy}
+        onAnswer={(answers) =>
+          void submit({ status: 'edited', editedInput: answeredInput(approval.inputJson, answers) })
+        }
+        onSkip={() => void submit({ status: 'rejected' })}
+      />
+      <ErrorMessage>{error}</ErrorMessage>
+    </div>
+  );
+}
+
+export function ApprovalDetail(props: ApprovalDetailProps) {
+  const questions = readUserQuestions(props.approval);
+  return questions ? (
+    <QuestionDetail approval={props.approval} questions={questions} onResolve={props.onResolve} />
+  ) : (
+    <ActionDetail {...props} />
+  );
+}
+
+function ActionDetail({ approval, onResolve, scrollClassName, shortcuts = false }: ApprovalDetailProps) {
   const preview = readApprovalPreview(approval);
   const [mode, setMode] = useState<Mode>('view');
   const [editText, setEditText] = useState(() => JSON.stringify(approval.inputJson, null, 2));
@@ -234,7 +274,7 @@ export function ApprovalCard({ approval, onResolve }: ApprovalCardProps) {
   return (
     <section aria-label="Validation requise" className={styles.card}>
       <div className={styles.head}>
-        <h2 className={styles.title}>{approvalTitle(readApprovalPreview(approval))}</h2>
+        <h2 className={styles.title}>{approvalHeading(approval)}</h2>
         <span className={styles.tool}>{shortToolName(approval.tool)} · politique : demander</span>
       </div>
       <ApprovalDetail approval={approval} onResolve={onResolve} />

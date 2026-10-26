@@ -19,6 +19,11 @@ import {
   withRuntime,
 } from './agent-labels';
 import styles from './agents.module.css';
+import {
+  GLOBAL_INSTRUCTIONS_SETTING,
+  InstructionsEditor,
+  ORCHESTRATOR_INSTRUCTIONS_SETTING,
+} from './InstructionsEditor';
 import { RuntimeBadge } from './RuntimeBadge';
 import { RuntimePicker } from './RuntimePicker';
 
@@ -136,6 +141,29 @@ export function AgentsTab({ agents, onAgentsChange }: AgentsTabProps) {
         </select>
         <span className={styles.hint}>Le modèle se règle dans la fiche de l’agent.</span>
       </label>
+      <section aria-label="Instructions globales" className={styles.sectionWide}>
+        <div className={styles.sectionHead}>
+          <h3 className={styles.sectionName}>Instructions globales</h3>
+        </div>
+        <p className={styles.sectionDescription}>
+          Ajoutées au prompt système de toutes les tâches, quel que soit l’agent (Claude Code, API, Ollama,
+          Gemini).
+        </p>
+        <InstructionsEditor settingKey={GLOBAL_INSTRUCTIONS_SETTING} label="Instructions globales" />
+      </section>
+      <section aria-label="Instructions de l’orchestrateur" className={styles.sectionWide}>
+        <div className={styles.sectionHead}>
+          <h3 className={styles.sectionName}>Instructions de l’orchestrateur</h3>
+        </div>
+        <p className={styles.sectionDescription}>
+          Ajoutées seulement à la conversation, quel que soit l’agent qui la porte. Les sous-tâches déléguées
+          ne les reçoivent pas.
+        </p>
+        <InstructionsEditor
+          settingKey={ORCHESTRATOR_INSTRUCTIONS_SETTING}
+          label="Instructions de l’orchestrateur"
+        />
+      </section>
       <div className={styles.masterDetail}>
         <section aria-label="Agents configurés" className={styles.listCard}>
           <ul className={styles.agentList}>

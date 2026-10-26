@@ -12,9 +12,10 @@ use crate::files::templates::{self, GeneratedFile, TemplatePatch};
 use crate::modules::{is_enabled, LocalModuleId};
 use crate::sidecar::{HostError, HostHandler, SidecarClient};
 use regis_model::{
-    Agent, Approval, ApprovalStatus, Brief, Connector, Entity, EntityKind, Fact, FactStatus,
-    FileEntry, FileSource, ItemKind, ItemUpsert, Job, JobEvent, JobStatus, Link, LinkProposalRow,
-    NewApproval, NewJob, NewJobEvent, RoutingRule, Template, ToolPolicy,
+    Agent, Approval, ApprovalStatus, Brief, Connector, Entity, EntityKind, EntityResource, Fact,
+    FactDecision, FactStatus, FileEntry, FileSource, ItemKind, ItemUpsert, Job, JobEvent,
+    JobStatus, Link, LinkProposalRow, NewApproval, NewJob, NewJobEvent, ResourceKind, RoutingRule,
+    Template, ToolPolicy,
 };
 
 #[derive(Clone)]
@@ -49,10 +50,16 @@ const METHODS: &[(&str, StoreMethod)] = &[
     ("store.connectors.list", connectors_list),
     ("store.connectors.recordSync", connectors_record_sync),
     ("store.entities.save", entities_save),
+    ("store.entities.update", entities_update),
     ("store.links.insertAuto", links_insert_auto),
+    ("store.links.linkEntities", links_link_entities),
     ("store.facts.list", facts_list),
     ("store.facts.add", facts_add),
+    ("store.facts.decide", facts_decide),
     ("store.facts.delete", facts_delete),
+    ("store.notes.add", notes_add),
+    ("store.resources.add", resources_add),
+    ("store.resources.delete", resources_delete),
     ("store.settings.set", settings_set),
     ("store.settings.listPrefix", settings_list_prefix),
     ("store.files.list", files_list),
@@ -403,6 +410,30 @@ fn entities_save(context: &StoreContext, params: Value) -> Result<Value, HostErr
     to_json(&entity)
 }
 
+#[derive(Deserialize)]
+struct EntitiesUpdateParams {
+    id: String,
+    name: Option<String>,
+    kind: Option<EntityKind>,
+    tags: Option<Vec<String>>,
+}
+
+fn entities_update(context: &StoreContext, params: Value) -> Result<Value, HostError> {
+    let params: EntitiesUpdateParams = parse(params)?;
+    let entity = context.db.with_conn(|conn| {
+        repo::update_entity(
+            conn,
+            &params.id,
+            repo::EntityUpdate {
+                name: params.name,
+                kind: params.kind,
+                tags: params.tags,
+            },
+        )
+    })?;
+    to_json(&entity)
+}
+
 fn syntheses_list(context: &StoreContext, _params: Value) -> Result<Value, HostError> {
     let syntheses = context.db.with_conn(|conn| repo::list_syntheses(conn))?;
     to_json(&syntheses)
@@ -450,6 +481,45 @@ fn links_insert_auto(context: &StoreContext, params: Value) -> Result<Value, Hos
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
+struct LinksLinkEntitiesParams {
+    from_entity_id: String,
+    to_entity_id: String,
+    rel: String,
+}
+
+fn links_link_entities(context: &StoreContext, params: Value) -> Result<Value, HostError> {
+    let params: LinksLinkEntitiesParams = parse(params)?;
+    let rel = params.rel.trim();
+    if rel.is_empty() {
+        return Err(HostError::InvalidParams(
+            "the link kind is empty".to_owned(),
+        ));
+    }
+    if params.from_entity_id == params.to_entity_id {
+        return Err(HostError::InvalidParams(
+            "an entity cannot be linked to itself".to_owned(),
+        ));
+    }
+    let inserted = context.db.with_conn(|conn| {
+        repo::require::<Entity>(conn, &params.from_entity_id)?;
+        repo::require::<Entity>(conn, &params.to_entity_id)?;
+        repo::insert_links_if_absent(
+            conn,
+            &[LinkProposalRow {
+                from_type: "entity".to_owned(),
+                from_id: params.from_entity_id.clone(),
+                to_entity_id: params.to_entity_id.clone(),
+                rel: rel.to_owned(),
+                confidence: None,
+            }],
+            "user",
+        )
+    })?;
+    Ok(json!({ "inserted": inserted }))
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct FactsListParams {
     entity_id: Option<String>,
 }
@@ -487,6 +557,68 @@ fn facts_add(context: &StoreContext, params: Value) -> Result<Value, HostError> 
         )
     })?;
     to_json(&fact)
+}
+
+#[derive(Deserialize)]
+struct FactsDecideParams {
+    id: String,
+    status: FactDecision,
+}
+
+fn facts_decide(context: &StoreContext, params: Value) -> Result<Value, HostError> {
+    let params: FactsDecideParams = parse(params)?;
+    let fact = context
+        .db
+        .with_conn(|conn| repo::decide_fact(conn, &params.id, params.status))?;
+    to_json(&fact)
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct NotesAddParams {
+    entity_id: String,
+    text: String,
+}
+
+fn notes_add(context: &StoreContext, params: Value) -> Result<Value, HostError> {
+    let params: NotesAddParams = parse(params)?;
+    let note = context
+        .db
+        .with_conn(|conn| repo::add_entity_note(conn, &params.entity_id, &params.text))?;
+    to_json(&note)
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ResourcesAddParams {
+    entity_id: String,
+    kind: ResourceKind,
+    label: Option<String>,
+    value: String,
+}
+
+fn resources_add(context: &StoreContext, params: Value) -> Result<Value, HostError> {
+    let params: ResourcesAddParams = parse(params)?;
+    let resource = context.db.with_conn(|conn| {
+        repo::add_entity_resource(
+            conn,
+            repo::NewEntityResource {
+                entity_id: params.entity_id,
+                kind: params.kind,
+                label: params.label,
+                value: params.value,
+            },
+        )
+    })?;
+    to_json(&resource)
+}
+
+fn resources_delete(context: &StoreContext, params: Value) -> Result<Value, HostError> {
+    let params: IdParams = parse(params)?;
+    let deleted = context
+        .db
+        .with_conn(|conn| repo::delete::<EntityResource>(conn, &params.id))?;
+    Ok(json!({ "deleted": deleted }))
 }
 
 fn facts_delete(context: &StoreContext, params: Value) -> Result<Value, HostError> {
@@ -772,6 +904,114 @@ mod tests {
             json!({ "kind": "client", "name": " " }),
         );
         assert!(matches!(invalid, Err(HostError::InvalidParams(_))));
+    }
+
+    #[test]
+    fn brain_write_methods_update_link_decide_and_note() {
+        let (context, _sink) = context_with_agent("rpc-brain-write");
+        let save = |kind: &str, name: &str| {
+            call(
+                &context,
+                "store.entities.save",
+                json!({ "kind": kind, "name": name }),
+            )
+            .expect("save entity")["id"]
+                .as_str()
+                .expect("entity id")
+                .to_owned()
+        };
+        let client = save("client", "Atelier");
+        let contact = save("contact", "Marie");
+
+        let updated = call(
+            &context,
+            "store.entities.update",
+            json!({ "id": client, "name": "Atelier SA", "tags": ["industrie"] }),
+        )
+        .expect("update entity");
+        let link = json!({ "fromEntityId": contact, "toEntityId": client, "rel": "works_for" });
+        let first = call(&context, "store.links.linkEntities", link.clone()).expect("link");
+        let second = call(&context, "store.links.linkEntities", link).expect("link again");
+        let self_link = call(
+            &context,
+            "store.links.linkEntities",
+            json!({ "fromEntityId": client, "toEntityId": client, "rel": "about" }),
+        );
+        let fact = call(
+            &context,
+            "store.facts.add",
+            json!({ "entityId": client, "text": "Paie a 45 jours", "sourceType": "job", "sourceId": "j1", "status": "inferred" }),
+        )
+        .expect("add fact");
+        let confirmed = call(
+            &context,
+            "store.facts.decide",
+            json!({ "id": fact["id"], "status": "confirmed" }),
+        )
+        .expect("confirm fact");
+        let note = call(
+            &context,
+            "store.notes.add",
+            json!({ "entityId": client, "text": "Prefere les rendez-vous le matin" }),
+        )
+        .expect("add note");
+        let links = call(&context, "store.links.list", json!({})).expect("links");
+
+        assert_eq!(updated["name"], "Atelier SA");
+        assert_eq!(updated["kind"], "client");
+        assert_eq!(updated["tagsJson"], json!(["industrie"]));
+        assert_eq!(first["inserted"], 1);
+        assert_eq!(second["inserted"], 0);
+        assert!(matches!(self_link, Err(HostError::InvalidParams(_))));
+        assert_eq!(confirmed["status"], "confirmed");
+        assert_eq!(note["kind"], "note");
+        assert!(links.as_array().expect("links").iter().any(|link| {
+            link["fromType"] == "entity" && link["rel"] == "works_for" && link["origin"] == "user"
+        }));
+    }
+
+    #[test]
+    fn resources_are_attached_once_listed_on_the_card_and_deleted() {
+        let (context, _sink) = context_with_agent("rpc-resources");
+        let project = call(
+            &context,
+            "store.entities.save",
+            json!({ "kind": "project", "name": "Spellcache" }),
+        )
+        .expect("save project");
+        let id = project["id"].as_str().expect("project id").to_owned();
+        let repo = json!({ "entityId": id, "kind": "repo", "value": " D:/git/spellcache ", "label": "Checkout" });
+
+        let first = call(&context, "store.resources.add", repo.clone()).expect("add repo");
+        let again = call(&context, "store.resources.add", repo).expect("add again");
+        call(
+            &context,
+            "store.resources.add",
+            json!({ "entityId": id, "kind": "remote", "value": "https://github.com/chwazy/spellcache" }),
+        )
+        .expect("add remote");
+        let empty = call(
+            &context,
+            "store.resources.add",
+            json!({ "entityId": id, "kind": "specs", "value": " " }),
+        );
+        let card = call(&context, "store.brain.entityCard", json!({ "id": id })).expect("card");
+        call(
+            &context,
+            "store.resources.delete",
+            json!({ "id": first["id"] }),
+        )
+        .expect("delete");
+        let after =
+            call(&context, "store.brain.entityCard", json!({ "id": id })).expect("card after");
+
+        assert_eq!(first["value"], "D:/git/spellcache");
+        assert_eq!(first["label"], "Checkout");
+        assert_eq!(again["id"], first["id"]);
+        assert!(matches!(empty, Err(HostError::InvalidParams(_))));
+        assert_eq!(card["resources"].as_array().map(Vec::len), Some(2));
+        assert_eq!(after["resources"].as_array().map(Vec::len), Some(1));
+        assert_eq!(after["resources"][0]["kind"], "remote");
     }
 
     #[test]

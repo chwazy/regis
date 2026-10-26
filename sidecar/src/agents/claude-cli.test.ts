@@ -12,6 +12,7 @@ import { DriverUnavailableError } from './driver';
 import { collect, makeAgent, makeRunInput } from './test-support';
 
 const FAKE_BIN = fileURLToPath(new URL('../../../tests/fake-bins/claude', import.meta.url));
+const FAKE_SCRIPT = fileURLToPath(new URL('../../../tests/fake-bins/claude.mjs', import.meta.url));
 const fixturePath = (name: string): string =>
   fileURLToPath(new URL(`../../../tests/fixtures/claude-cli/${name}.ndjson`, import.meta.url));
 
@@ -81,6 +82,31 @@ describe('ClaudeCliDriver', () => {
       };
       expect(config.mcpServers.regis.headers.Authorization).toBe('Bearer ${REGIS_MCP_SECRET_REGIS_INTERNAL}');
       expect(dump.env.REGIS_MCP_SECRET_REGIS_INTERNAL).toBe(token);
+    } finally {
+      await rm(dumpDirectory, { recursive: true, force: true });
+    }
+  });
+
+  it('runs a node script binary with node so multi-line arguments survive', async () => {
+    const dumpDirectory = await mkdtemp(join(tmpdir(), 'regis-dump-'));
+    const dumpPath = join(dumpDirectory, 'dump.json');
+    try {
+      const driver = driverWith(
+        () =>
+          resolveClaudeBin({
+            getSetting: () => Promise.resolve(null),
+            env: { REGIS_CLAUDE_BIN: FAKE_SCRIPT },
+          }),
+        { FAKE_CLAUDE_FIXTURE: fixturePath('simple'), FAKE_CLAUDE_DUMP: dumpPath },
+      );
+
+      await collect(
+        driver.run(makeRunInput({ systemPrompt: 'Ligne 1\nLigne 2', agent: makeAgent({ model: 'haiku' }) })),
+      );
+
+      const { args } = JSON.parse(await readFile(dumpPath, 'utf8')) as { args: string[] };
+      expect(args).toContain('Ligne 1\nLigne 2');
+      expect(args.slice(args.indexOf('--model'), args.indexOf('--model') + 2)).toEqual(['--model', 'haiku']);
     } finally {
       await rm(dumpDirectory, { recursive: true, force: true });
     }

@@ -24,6 +24,7 @@ const card: EntityCard = {
       source: { kind: 'item', id: 'm1', label: 'Re: Facture', fileId: null },
     },
   ],
+  resources: [],
   projects: [],
   documents: [],
   timeline: [],
@@ -102,5 +103,128 @@ describe('brain tools', () => {
     expect(noJob.isError).toBe(true);
     expect(noEntity.isError).toBe(true);
     expect(store.facts).toEqual([]);
+  });
+
+  it('creates an entity once and returns the existing one on a same-name retry', async () => {
+    const { store, tools } = setup();
+
+    const created = await tools.createEntity({ kind: 'contact', name: 'Marie Dupont', tags: ['achats'] });
+    const again = await tools.createEntity({ kind: 'contact', name: '  marie dupont ' });
+    const sameNameOtherKind = await tools.createEntity({ kind: 'client', name: 'Marie Dupont' });
+    const invalid = await tools.createEntity({ kind: 'supplier', name: 'X' });
+
+    expect(created.payload).toMatchObject({
+      entity: { kind: 'contact', name: 'Marie Dupont' },
+      duplicate: false,
+    });
+    expect(again.payload).toMatchObject({ duplicate: true });
+    expect(sameNameOtherKind.payload).toMatchObject({ duplicate: false });
+    expect(invalid.isError).toBe(true);
+    expect(store.entities.filter((entity) => entity.name === 'Marie Dupont')).toHaveLength(2);
+  });
+
+  it('updates an entity and refuses an empty change or an unknown id', async () => {
+    const { tools } = setup();
+
+    const renamed = await tools.updateEntity({ entityId: 'E-atelier', name: 'Atelier Rhône', tags: ['vip'] });
+    const empty = await tools.updateEntity({ entityId: 'E-atelier' });
+    const missing = await tools.updateEntity({ entityId: 'nope', name: 'X' });
+
+    expect(renamed.payload).toMatchObject({ entity: { name: 'Atelier Rhône', tags: ['vip'] } });
+    expect(empty.isError).toBe(true);
+    expect(missing.isError).toBe(true);
+  });
+
+  it('links two entities without duplicating the link', async () => {
+    const { store, tools } = setup();
+    const contact = await store.saveEntity({ kind: 'contact', name: 'Marie' });
+
+    const first = await tools.linkEntities({
+      fromEntityId: contact.id,
+      toEntityId: 'E-atelier',
+      rel: 'belongs_to',
+    });
+    const again = await tools.linkEntities({
+      fromEntityId: contact.id,
+      toEntityId: 'E-atelier',
+      rel: 'belongs_to',
+    });
+
+    expect(first.payload).toEqual({ linked: true, duplicate: false });
+    expect(again.payload).toEqual({ linked: true, duplicate: true });
+    expect(store.links).toEqual([
+      expect.objectContaining({
+        fromType: 'entity',
+        fromId: contact.id,
+        toId: 'E-atelier',
+        rel: 'belongs_to',
+      }),
+    ]);
+  });
+
+  it('confirms a fact and deletes it when rejected', async () => {
+    const { store, tools } = setup();
+    const fact = await store.addFact({
+      entityId: 'E-atelier',
+      text: 'Paie à 30 jours',
+      sourceType: 'job',
+      sourceId: 'J1',
+      status: 'inferred',
+    });
+
+    const confirmed = await tools.setFactStatus({ factId: fact.id, status: 'confirmed' });
+    const rejected = await tools.setFactStatus({ factId: fact.id, status: 'rejected' });
+    const missing = await tools.setFactStatus({ factId: 'nope', status: 'confirmed' });
+
+    expect(confirmed.payload).toEqual({ factId: fact.id, status: 'confirmed' });
+    expect(rejected.payload).toEqual({ factId: fact.id, deleted: true });
+    expect(missing.isError).toBe(true);
+    expect(store.facts).toEqual([]);
+  });
+
+  it('adds a note to an entity and asks the brain to process it', async () => {
+    const store = createMemoryBrainStore();
+    store.entities = [atelier];
+    let runs = 0;
+    const tools = createBrainTools({
+      search: () => Promise.resolve({ entities: [], documents: [], mails: [], notes: [] }),
+      getEntityCard: () => Promise.resolve(card),
+      store,
+      onNoteAdded: () => {
+        runs += 1;
+      },
+    });
+
+    const added = await tools.addNote({ entityId: 'E-atelier', text: 'Préfère les rendez-vous le matin' });
+
+    expect(added.isError).toBe(false);
+    expect(runs).toBe(1);
+    expect(store.items).toEqual([expect.objectContaining({ kind: 'note' })]);
+    expect(store.links).toEqual([
+      expect.objectContaining({ fromType: 'item', toId: 'E-atelier', rel: 'about' }),
+    ]);
+  });
+  it('attaches project resources once, shows them on the entity and removes them', async () => {
+    const { store, tools } = setup();
+
+    const repo = await tools.addResource({
+      entityId: 'E-atelier',
+      kind: 'repo',
+      value: 'D:/git/atelier',
+      label: 'Checkout',
+    });
+    const again = await tools.addResource({ entityId: 'E-atelier', kind: 'repo', value: ' D:/git/atelier ' });
+    const unknownKind = await tools.addResource({ entityId: 'E-atelier', kind: 'secret', value: 'x' });
+    const unknownEntity = await tools.addResource({ entityId: 'nope', kind: 'remote', value: 'https://x' });
+    const resourceId = (repo.payload as { resourceId: string }).resourceId;
+
+    expect(repo.payload).toMatchObject({ kind: 'repo', value: 'D:/git/atelier' });
+    expect((again.payload as { resourceId: string }).resourceId).toBe(resourceId);
+    expect(unknownKind.isError).toBe(true);
+    expect(unknownEntity.isError).toBe(true);
+    expect(store.resources).toHaveLength(1);
+
+    expect((await tools.removeResource({ resourceId })).payload).toEqual({ resourceId, deleted: true });
+    expect((await tools.removeResource({ resourceId })).isError).toBe(true);
   });
 });

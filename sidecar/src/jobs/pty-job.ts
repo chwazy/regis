@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Agent, Connector, Job, ToolInfo } from '@regis/shared';
 import type { ConnectorLaunch } from '../mcp/host';
+import { claudeCommand } from '../agents/claude-bin';
 import { REGIS_TOKEN_ENV } from '../agents/claude-cli';
 import type { AgentToolPolicy } from '../agents/driver';
 import { allowedConnectorIds, buildClaudeEnv, buildMcpConfig } from '../agents/mcp-config';
@@ -240,7 +241,8 @@ export class PtyJobs {
       if (resume) {
         await this.deps.store.updateJob(job.id, { status: 'running', error: null, endedAt: null });
       }
-      return { program: bin, args, cwd: job.cwd, env: buildClaudeEnv(secretEnv) };
+      const command = claudeCommand(bin, args);
+      return { program: command.command, args: command.args, cwd: job.cwd, env: buildClaudeEnv(secretEnv) };
     } catch (error) {
       await this.discard(jobId);
       throw error;

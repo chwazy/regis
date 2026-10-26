@@ -1,12 +1,19 @@
 import type { Agent, ToolAccess, ToolInfo } from '@regis/shared';
 import { BUILT_IN_WRITE_TOOLS } from '../agents/deny-writes-policy';
 import type { AgentToolPolicy, ToolDecision, ToolFlags } from '../agents/driver';
+import { hasAnswers, isUserQuestion } from '../approvals/questions';
 import { DEFERRED_DENY_MESSAGE, type ApprovalDecision } from '../approvals/service';
-import { REGIS_BRAIN_ADD_FACT_TOOL, REGIS_BRAIN_READ_TOOLS } from '../regis-mcp/brain-tools';
+import { REGIS_BRAIN_READ_TOOLS, REGIS_BRAIN_WRITE_TOOLS } from '../regis-mcp/brain-tools';
 import { REGIS_JOB_TOOLS } from '../regis-mcp/jobs-tools';
 import { REGIS_RENDER_TEMPLATE_TOOL } from '../regis-mcp/template-tools';
 import { buildToolFlags } from './flags';
-import { resolvePolicyMatch, type DefaultWrite, type PolicyMatch, type PolicyRule } from './resolve';
+import {
+  resolvePolicyMatch,
+  type DefaultWrite,
+  type Policy,
+  type PolicyMatch,
+  type PolicyRule,
+} from './resolve';
 
 export const REGIS_PERMISSION_TOOL = 'mcp__regis__approve';
 
@@ -42,7 +49,8 @@ export function createToolPolicy(deps: ToolPolicyDeps): RegisToolPolicy {
 
   const authorize = async (request: ToolAuthorization): Promise<ToolDecision> => {
     const { policy } = await resolve(request.agentId, request.qualifiedName, request.access);
-    if (policy === 'auto') {
+    const question = isUserQuestion(request.qualifiedName);
+    if (policy === 'auto' && !question) {
       return { allow: true };
     }
     if (policy === 'deny') {
@@ -54,6 +62,9 @@ export function createToolPolicy(deps: ToolPolicyDeps): RegisToolPolicy {
     }
     if (decision.status === 'rejected') {
       return { allow: false, message: decision.note?.trim() || 'Action rejetée par l’utilisateur' };
+    }
+    if (question && !(decision.status === 'edited' && hasAnswers(decision.updatedInput))) {
+      return { allow: false, message: 'L’utilisateur n’a pas répondu à la question.' };
     }
     return decision.status === 'edited' && decision.updatedInput !== undefined
       ? { allow: true, updatedInput: decision.updatedInput }
@@ -68,13 +79,12 @@ export function createToolPolicy(deps: ToolPolicyDeps): RegisToolPolicy {
       const rules = await deps.listRules();
       const defaultWrite = await readDefaultWrite();
       const flags = buildToolFlags(rules, agent, tools, defaultWrite);
-      const addFactPolicy = resolvePolicyMatch(
-        rules,
-        agent.id,
-        REGIS_BRAIN_ADD_FACT_TOOL,
-        'write',
-        defaultWrite,
-      ).policy;
+      const brainWritePolicies = REGIS_BRAIN_WRITE_TOOLS.map((tool) => ({
+        tool,
+        policy: resolvePolicyMatch(rules, agent.id, tool, 'write', defaultWrite).policy,
+      }));
+      const brainWriteToolsWith = (policy: Policy) =>
+        brainWritePolicies.filter((entry) => entry.policy === policy).map((entry) => entry.tool);
       const renderPolicy = resolvePolicyMatch(
         rules,
         agent.id,
@@ -87,13 +97,13 @@ export function createToolPolicy(deps: ToolPolicyDeps): RegisToolPolicy {
           ...flags.allowed,
           ...(agent.canSpawn ? REGIS_JOB_TOOLS : []),
           ...REGIS_BRAIN_READ_TOOLS,
-          ...(addFactPolicy === 'auto' ? [REGIS_BRAIN_ADD_FACT_TOOL] : []),
+          ...brainWriteToolsWith('auto'),
           ...(renderPolicy === 'auto' ? [REGIS_RENDER_TEMPLATE_TOOL] : []),
         ],
         disallowed: [
           ...flags.disallowed,
           ...BUILT_IN_WRITE_TOOLS,
-          ...(addFactPolicy === 'deny' ? [REGIS_BRAIN_ADD_FACT_TOOL] : []),
+          ...brainWriteToolsWith('deny'),
           ...(renderPolicy === 'deny' ? [REGIS_RENDER_TEMPLATE_TOOL] : []),
         ],
       };

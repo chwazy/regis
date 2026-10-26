@@ -36,7 +36,7 @@ export interface JobRunnerDeps {
   getDriver: (agent: Agent) => AgentDriver;
   getSetting: (key: string) => Promise<string | null>;
   getDataDir: () => Promise<string>;
-  systemPromptFor?: (job: Job, agent: Agent) => string | undefined;
+  systemPromptFor?: (job: Job, agent: Agent) => Promise<string | undefined> | string | undefined;
   ptyJobs?: Pick<PtyJobs, 'start' | 'hasTerminal' | 'closeTerminal'>;
   onLog: (line: string) => void;
 }
@@ -413,8 +413,8 @@ export class JobRunner {
     let costUsd = job.costUsd;
     let tokensIn = job.tokensIn;
     let tokensOut = job.tokensOut;
-    const systemPrompt = this.deps.systemPromptFor?.(job, agent);
     try {
+      const systemPrompt = await this.deps.systemPromptFor?.(job, agent);
       const driver = this.deps.getDriver(agent);
       const resumeSession = run.resume && driver.supportsResume === true && Boolean(job.sessionId);
       const history: ChatTurn[] =

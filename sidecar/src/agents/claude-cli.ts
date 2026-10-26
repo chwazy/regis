@@ -6,7 +6,7 @@ import { createInterface } from 'node:readline';
 import spawn from 'cross-spawn';
 import type { Agent, Connector, ToolInfo } from '@regis/shared';
 import type { ConnectorLaunch } from '../mcp/host';
-import { FIXTURE_CLAUDE_VERSION, readClaudeVersion } from './claude-bin';
+import { FIXTURE_CLAUDE_VERSION, claudeCommand, readClaudeVersion } from './claude-bin';
 import { buildClaudeArgs, parseClaudeStreamLine } from './claude-stream';
 import {
   DriverUnavailableError,
@@ -36,6 +36,7 @@ export interface ClaudeCliDeps {
   regisEndpoint?: () => Promise<RegisMcpEndpoint>;
   /** Dossiers des sources de référence, lisibles par l'agent sans être indexés. */
   listReferenceDirs?: () => Promise<string[]>;
+  loadsUserConfig?: (agentId: string) => Promise<boolean>;
   onLog: (line: string) => void;
   extraEnv?: Record<string, string>;
 }
@@ -100,6 +101,7 @@ export class ClaudeCliDriver implements AgentDriver {
         await this.deps.policy.buildToolFlags(input.agent, tools),
         this.deps.regisEndpoint ? this.deps.policy.permissionTool : undefined,
         (await this.deps.listReferenceDirs?.()) ?? [],
+        (await this.deps.loadsUserConfig?.(input.agent.id)) ?? false,
       );
       yield* this.stream(bin, args, input, { ...buildClaudeEnv(secretEnv), ...this.deps.extraEnv });
     } finally {
@@ -150,7 +152,8 @@ export class ClaudeCliDriver implements AgentDriver {
     input: AgentRunInput,
     env: Record<string, string>,
   ): AsyncGenerator<AgentEvent> {
-    const child = spawn(bin, args, {
+    const command = claudeCommand(bin, args);
+    const child = spawn(command.command, command.args, {
       cwd: input.cwd,
       env,
       stdio: ['pipe', 'pipe', 'pipe'],

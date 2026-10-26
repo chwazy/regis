@@ -1,5 +1,6 @@
 import type { ApprovalPreview } from '@regis/shared';
 import { formatCalendarDay, formatHours } from '../lib/format';
+import { ASK_USER_QUESTION_TOOL } from './user-question';
 
 const TOOL_SEGMENTS_TO_SKIP = 2;
 
@@ -23,6 +24,16 @@ export function approvalTitle(preview: ViewPreview): string {
     case 'generic':
       return 'L’agent demande une validation';
   }
+}
+
+export function approvalHeading(approval: {
+  tool: string;
+  previewJson: unknown;
+  inputJson: unknown;
+}): string {
+  return approval.tool === ASK_USER_QUESTION_TOOL
+    ? 'L’agent te pose une question'
+    : approvalTitle(readApprovalPreview(approval));
 }
 
 export function shortToolName(qualifiedTool: string): string {

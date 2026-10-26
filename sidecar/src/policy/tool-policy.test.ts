@@ -1,9 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Approval, ToolInfo } from '@regis/shared';
 import { createApprove } from '../regis-mcp/approve';
-import { ApprovalService, DEFERRED_DENY_MESSAGE } from '../approvals/service';
+import { ASK_USER_QUESTION_TOOL } from '../approvals/questions';
+import { ApprovalService, DEFERRED_DENY_MESSAGE, type ApprovalDecision } from '../approvals/service';
 import { makeAgent } from '../agents/test-support';
-import { REGIS_BRAIN_ADD_FACT_TOOL, REGIS_BRAIN_READ_TOOLS } from '../regis-mcp/brain-tools';
+import {
+  REGIS_BRAIN_ADD_FACT_TOOL,
+  REGIS_BRAIN_READ_TOOLS,
+  REGIS_BRAIN_WRITE_TOOLS,
+} from '../regis-mcp/brain-tools';
 import { REGIS_JOB_TOOLS } from '../regis-mcp/jobs-tools';
 import { REGIS_RENDER_TEMPLATE_TOOL } from '../regis-mcp/template-tools';
 import type { PolicyRule } from './resolve';
@@ -65,6 +70,60 @@ describe('tool policy approval timeout', () => {
   });
 });
 
+describe('createToolPolicy AskUserQuestion', () => {
+  const QUESTIONS = { questions: [{ question: 'Quelle couleur ?', header: 'Couleur', options: [] }] };
+  const authorizeQuestion = (rules: PolicyRule[], decision: ApprovalDecision | 'deferred') => {
+    const requested: string[] = [];
+    const policy = createToolPolicy({
+      listRules: () => Promise.resolve(rules),
+      approvals: {
+        request: (_jobId, tool) => {
+          requested.push(tool);
+          return Promise.resolve(decision);
+        },
+      },
+    });
+    const result = policy.authorize({
+      agentId: 'a1',
+      jobId: 'j1',
+      qualifiedName: ASK_USER_QUESTION_TOOL,
+      access: 'write',
+      input: QUESTIONS,
+    });
+    return { result, requested };
+  };
+
+  it('always asks the user, even when a rule makes the tool automatic', async () => {
+    const answered = { ...QUESTIONS, answers: { 'Quelle couleur ?': 'Rouge' } };
+    const { result, requested } = authorizeQuestion([{ agentId: null, toolPattern: '*', policy: 'auto' }], {
+      status: 'edited',
+      updatedInput: answered,
+    });
+
+    await expect(result).resolves.toEqual({ allow: true, updatedInput: answered });
+    expect(requested).toEqual([ASK_USER_QUESTION_TOOL]);
+  });
+
+  it('denies without asking when a rule forbids questions', async () => {
+    const { result, requested } = authorizeQuestion(
+      [{ agentId: null, toolPattern: ASK_USER_QUESTION_TOOL, policy: 'deny' }],
+      'deferred',
+    );
+
+    await expect(result).resolves.toMatchObject({ allow: false });
+    expect(requested).toEqual([]);
+  });
+
+  it('denies an approval that carries no answer', async () => {
+    const { result } = authorizeQuestion([], { status: 'approved' });
+
+    await expect(result).resolves.toEqual({
+      allow: false,
+      message: 'L’utilisateur n’a pas répondu à la question.',
+    });
+  });
+});
+
 const flagsPolicy = createToolPolicy({
   listRules: () => Promise.resolve([]),
   approvals: { request: () => Promise.resolve('deferred') },
@@ -98,6 +157,26 @@ describe('createToolPolicy buildToolFlags', () => {
     expect(unruled.allowed).not.toContain(REGIS_BRAIN_ADD_FACT_TOOL);
     expect(automatic.allowed).toContain(REGIS_BRAIN_ADD_FACT_TOOL);
     expect(denied.disallowed).toContain(REGIS_BRAIN_ADD_FACT_TOOL);
+  });
+
+  it('lets an agent rule open every brain write tool while the default keeps asking', async () => {
+    const rules: PolicyRule[] = [
+      { agentId: null, toolPattern: 'mcp__regis__brain_*', policy: 'ask' },
+      { agentId: 'writer', toolPattern: 'mcp__regis__brain_*', policy: 'auto' },
+      { agentId: 'reader', toolPattern: 'mcp__regis__brain_*', policy: 'deny' },
+    ];
+
+    const writer = await policyWithRules(rules).buildToolFlags(makeAgent({ id: 'writer' }), []);
+    const reader = await policyWithRules(rules).buildToolFlags(makeAgent({ id: 'reader' }), []);
+    const other = await policyWithRules(rules).buildToolFlags(makeAgent({ id: 'other' }), []);
+
+    expect(writer.allowed).toEqual(expect.arrayContaining(REGIS_BRAIN_WRITE_TOOLS));
+    expect(reader.disallowed).toEqual(expect.arrayContaining(REGIS_BRAIN_WRITE_TOOLS));
+    expect(reader.allowed).toEqual(expect.arrayContaining(REGIS_BRAIN_READ_TOOLS));
+    for (const tool of REGIS_BRAIN_WRITE_TOOLS) {
+      expect(other.allowed).not.toContain(tool);
+      expect(other.disallowed).not.toContain(tool);
+    }
   });
 
   it('allows render_template only when a rule makes it automatic', async () => {

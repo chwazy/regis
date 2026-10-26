@@ -17,9 +17,10 @@ mod settings;
 pub use agents::{list_rules, save_agent, save_policy, save_rules};
 pub use approvals::{create_approval, list_approvals, resolve_approval};
 pub use brain::{
-    add_entity_note, add_fact, chunk_neighbors, decide_fact, ensure_brain_connector, entity_card,
-    group_search, insert_links_if_absent, list_chunk_texts, list_entity_summaries, list_facts,
-    list_syntheses, save_entity, save_synthesis, update_entity, EntitySave, EntityUpdate, NewFact,
+    add_entity_note, add_entity_resource, add_fact, chunk_neighbors, decide_fact,
+    ensure_brain_connector, entity_card, group_search, insert_links_if_absent, list_chunk_texts,
+    list_entity_resources, list_entity_summaries, list_facts, list_syntheses, save_entity,
+    save_synthesis, update_entity, EntitySave, EntityUpdate, NewEntityResource, NewFact,
     SynthesisSave,
 };
 pub use briefs::{get_brief_by_date, save_brief};

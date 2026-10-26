@@ -3,13 +3,16 @@ import type {
   ChunkText,
   Entity,
   EntityKind,
+  EntityResource,
   Fact,
+  FactDecision,
   FactStatus,
   FileEntry,
   Item,
   ItemKind,
   Link,
   LinkProposalRow,
+  ResourceKind,
 } from '@regis/shared';
 
 export interface EntityInput {
@@ -28,6 +31,26 @@ export interface FactInput {
   status: FactStatus;
 }
 
+export interface EntityUpdateInput {
+  id: string;
+  name?: string;
+  kind?: EntityKind;
+  tags?: string[];
+}
+
+export interface EntityLinkInput {
+  fromEntityId: string;
+  toEntityId: string;
+  rel: string;
+}
+
+export interface ResourceInput {
+  entityId: string;
+  kind: ResourceKind;
+  label?: string;
+  value: string;
+}
+
 export interface SettingEntry {
   key: string;
   value: string;
@@ -39,10 +62,16 @@ export interface BrainStore {
   listItems: (kind: ItemKind) => Promise<Item[]>;
   listFiles: () => Promise<FileEntry[]>;
   saveEntity: (input: EntityInput) => Promise<Entity>;
+  updateEntity: (input: EntityUpdateInput) => Promise<Entity>;
+  linkEntities: (input: EntityLinkInput) => Promise<number>;
   insertAutoLinks: (links: LinkProposalRow[]) => Promise<number>;
   listFacts: (entityId?: string) => Promise<Fact[]>;
   addFact: (input: FactInput) => Promise<Fact>;
+  decideFact: (id: string, decision: FactDecision) => Promise<Fact | null>;
   deleteFact: (id: string) => Promise<void>;
+  addNote: (entityId: string, text: string) => Promise<Item>;
+  addResource: (input: ResourceInput) => Promise<EntityResource>;
+  deleteResource: (id: string) => Promise<boolean>;
   listChunks: (ownerType: string, ownerId: string) => Promise<ChunkText[]>;
   neighbors: (fileId: string) => Promise<ChunkNeighbor[]>;
   getSetting: (key: string) => Promise<string | null>;
@@ -59,6 +88,9 @@ export function createHostBrainStore(call: HostCall): BrainStore {
     listItems: (kind) => call<Item[]>('store.items.list', { kind }),
     listFiles: () => call<FileEntry[]>('store.files.list', {}),
     saveEntity: (input) => call<Entity>('store.entities.save', input),
+    updateEntity: (input) => call<Entity>('store.entities.update', input),
+    linkEntities: async (input) =>
+      (await call<{ inserted: number }>('store.links.linkEntities', input)).inserted,
     insertAutoLinks: async (links) => {
       if (links.length === 0) {
         return 0;
@@ -68,6 +100,11 @@ export function createHostBrainStore(call: HostCall): BrainStore {
     },
     listFacts: (entityId) => call<Fact[]>('store.facts.list', entityId === undefined ? {} : { entityId }),
     addFact: (input) => call<Fact>('store.facts.add', input),
+    decideFact: (id, decision) => call<Fact | null>('store.facts.decide', { id, status: decision }),
+    addNote: (entityId, text) => call<Item>('store.notes.add', { entityId, text }),
+    addResource: (input) => call<EntityResource>('store.resources.add', input),
+    deleteResource: async (id) =>
+      (await call<{ deleted: boolean }>('store.resources.delete', { id })).deleted,
     deleteFact: async (id) => {
       await call('store.facts.delete', { id });
     },

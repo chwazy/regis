@@ -1,5 +1,6 @@
 import type { Approval, JobEventType, NewApproval, NewJobEvent, ToolInfo } from '@regis/shared';
 import { buildPreview } from './preview';
+import { describeAnswers, isUserQuestion } from './questions';
 
 export interface ApprovalDecision {
   status: 'approved' | 'edited' | 'rejected';
@@ -142,6 +143,14 @@ export class ApprovalService {
       throw new Error(`Aucune action différée pour la validation ${approvalId}`);
     }
     this.deferred.delete(approvalId);
+    if (isUserQuestion(deferred.tool)) {
+      const result = describeAnswers(deferred.updatedInput ?? deferred.input);
+      await this.record(deferred.jobId, 'tool_result', 'Réponse à la question enregistrée', {
+        approvalId,
+        result,
+      });
+      return { ok: result !== '', result };
+    }
     const tool = this.deps.tools.findTool(deferred.tool);
     if (!tool) {
       const result = `Outil introuvable : ${deferred.tool}`;

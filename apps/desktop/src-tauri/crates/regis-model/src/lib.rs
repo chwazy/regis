@@ -14,6 +14,7 @@ mod job;
 mod link;
 mod policy;
 mod recording;
+mod resource;
 mod routing;
 mod search;
 mod template;
@@ -39,6 +40,7 @@ pub use recording::{
     Recording, RecordingSources, RecordingStatus, RecordingView, SegmentSource,
     StartRecordingInput, TranscriptSegment,
 };
+pub use resource::{EntityResource, ResourceKind};
 pub use routing::RoutingRule;
 pub use search::SearchHit;
 pub use template::Template;

@@ -9,6 +9,10 @@ import { denyWritesPolicy } from './deny-writes-policy';
 import { DriverUnavailableError, type AgentDriver, type AgentToolPolicy } from './driver';
 import { OllamaDriver } from './ollama';
 
+export function loadUserConfigSetting(agentId: string): string {
+  return `agents.loadUserConfig.${agentId}`;
+}
+
 export interface AgentStore {
   listAgents: () => Promise<Agent[]>;
   listConnectors: () => Promise<Connector[]>;
@@ -49,6 +53,8 @@ export function createDriverRegistry(deps: AgentRegistryDeps): { getDriver: (age
           policy,
           ...(deps.regisEndpoint ? { regisEndpoint: deps.regisEndpoint } : {}),
           ...(deps.listReferenceDirs ? { listReferenceDirs: deps.listReferenceDirs } : {}),
+          loadsUserConfig: async (agentId) =>
+            (await deps.store.getSetting(loadUserConfigSetting(agentId))) === 'true',
           onLog: deps.onLog,
           ...(deps.extraEnv ? { extraEnv: deps.extraEnv } : {}),
         });

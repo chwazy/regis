@@ -47,6 +47,7 @@ import { bootstrapFromOdoo } from './brain/bootstrap';
 import { McpHost } from './mcp/host';
 import { createLaunchResolver } from './connectors/launch';
 import { chatSystemPrompt, createChat } from './orchestrator/chat';
+import { composeSystemPrompt, loadInstructions } from './agents/instructions';
 import { join } from 'node:path';
 import { parseDefaultWrite } from './policy/resolve';
 import { createToolPolicy } from './policy/tool-policy';
@@ -228,6 +229,7 @@ const brainTools = createBrainTools({
   search: (query) => server.call<GlobalSearchResult>('store.brain.search', { q: query }),
   getEntityCard: (id) => server.call<EntityCard>('store.brain.entityCard', { id }),
   store: brainStore,
+  onNoteAdded: () => brainService.requestRun(),
 });
 
 const regisServer: RegisMcpServer = new RegisMcpServer({
@@ -313,7 +315,11 @@ const runner = new JobRunner({
   getDriver,
   getSetting: agentStore.getSetting,
   getDataDir,
-  systemPromptFor: chatSystemPrompt,
+  systemPromptFor: async (job, agent) =>
+    composeSystemPrompt(
+      chatSystemPrompt(job, agent),
+      await loadInstructions(agentStore, agent.id, job.kind === 'chat'),
+    ),
   ptyJobs,
   onLog: toStderr,
 });

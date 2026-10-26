@@ -101,6 +101,14 @@ describe('parseClaudeStreamLine', () => {
     expect(events.at(-1)).toMatchObject({ type: 'end', isError: false });
   });
 
+  it('replays an answered AskUserQuestion on ask-user-question.ndjson', () => {
+    const events = replay('ask-user-question');
+
+    expect(events).toContainEqual(expect.objectContaining({ type: 'tool_call', tool: 'AskUserQuestion' }));
+    expect(events).toContainEqual(expect.objectContaining({ type: 'tool_result', ok: true }));
+    expect(events).toContainEqual({ type: 'message', text: 'You chose red.' });
+  });
+
   it('keeps internal tool calls and flags refused tool results on permission-deny.ndjson', () => {
     const events = replay('permission-deny');
 
@@ -138,6 +146,20 @@ describe('buildClaudeArgs', () => {
     expect(args).toEqual(expect.arrayContaining(['--mcp-config', 'mcp.json', '--strict-mcp-config']));
     expect(args).not.toContain('--max-budget-usd');
     expect(args).not.toContain('--resume');
+  });
+
+  it('loads the user ~/.claude configuration only when the agent opts in', () => {
+    const settingSources = (args: string[]) => args[args.indexOf('--setting-sources') + 1];
+
+    const withUserConfig = buildClaudeArgs(makeRunInput(), 'mcp.json', NO_TOOL_FLAGS, undefined, [], true);
+    expect(withUserConfig.slice(withUserConfig.indexOf('--permission-mode'))).toEqual(
+      expect.arrayContaining(['--permission-mode', 'default']),
+    );
+    expect(buildClaudeArgs(makeRunInput(), 'mcp.json', NO_TOOL_FLAGS)).not.toContain('--permission-mode');
+    expect(settingSources(buildClaudeArgs(makeRunInput(), 'mcp.json', NO_TOOL_FLAGS))).toBe('project');
+    expect(
+      settingSources(buildClaudeArgs(makeRunInput(), 'mcp.json', NO_TOOL_FLAGS, undefined, [], true)),
+    ).toBe('user,project');
   });
 
   it('adds --resume only when resuming a session', () => {

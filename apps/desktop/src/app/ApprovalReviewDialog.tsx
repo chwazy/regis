@@ -1,16 +1,12 @@
 import { useEffect, useState } from 'react';
 import type { Agent, Approval, Job } from '@regis/shared';
 import { ApprovalDetail, type ApprovalOutcome } from '../components/ApprovalCard';
-import {
-  approvalTitle,
-  readApprovalPreview,
-  shortToolName,
-  waitingSince,
-} from '../components/approval-labels';
+import { approvalHeading, shortToolName, waitingSince } from '../components/approval-labels';
 import controls from '../components/ui/controls.module.css';
 import { Dialog } from '../components/ui/Dialog';
 import dialog from '../components/ui/dialog.module.css';
 import { invokeCmd } from '../lib/ipc';
+import { ASK_USER_QUESTION_TOOL } from '../components/user-question';
 import styles from './ApprovalReviewDialog.module.css';
 
 interface ApprovalReviewDialogProps {
@@ -79,7 +75,7 @@ export function ApprovalReviewDialog({
     <Dialog labelledBy="approval-review-title" onClose={onClose}>
       <div className={dialog.head}>
         <h2 id="approval-review-title" className={`${dialog.title} ${styles.title}`}>
-          {approvalTitle(readApprovalPreview(approval))}
+          {approvalHeading(approval)}
         </h2>
         <span className={styles.position}>
           {position} / {total}
@@ -111,7 +107,11 @@ export function ApprovalReviewDialog({
         {shortToolName(approval.tool)} · politique : demander · {waitingSince(approval.createdAt, new Date())}
       </p>
       <ApprovalDetail key={approval.id} approval={approval} onResolve={onResolve} shortcuts />
-      <p className={styles.hint}>A approuver · R rejeter · ← → naviguer · Échap fermer</p>
+      <p className={styles.hint}>
+        {approval.tool === ASK_USER_QUESTION_TOOL
+          ? '← → naviguer · Échap fermer'
+          : 'A approuver · R rejeter · ← → naviguer · Échap fermer'}
+      </p>
     </Dialog>
   );
 }

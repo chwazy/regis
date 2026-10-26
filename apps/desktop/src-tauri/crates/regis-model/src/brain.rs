@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use super::{Entity, Fact, Item, Job};
+use super::{Entity, EntityResource, Fact, Item, Job};
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
@@ -109,6 +109,7 @@ pub struct EntityCard {
     pub stats: EntityStats,
     pub notes: Vec<EntityNote>,
     pub facts: Vec<FactView>,
+    pub resources: Vec<EntityResource>,
     pub projects: Vec<ProjectSummary>,
     pub documents: Vec<LinkedDocument>,
     pub timeline: Vec<TimelineEntry>,

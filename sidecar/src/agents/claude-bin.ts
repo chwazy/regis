@@ -9,6 +9,11 @@ export const CLAUDE_BIN_SETTING = 'agents.claudeBin';
 
 const VERSION_TIMEOUT_MS = 10_000;
 const WINDOWS_EXECUTABLE_EXTENSIONS = ['.exe', '.cmd', '.bat'];
+const NODE_SCRIPT = /\.[cm]?js$/i;
+
+export function claudeCommand(bin: string, args: string[]): { command: string; args: string[] } {
+  return NODE_SCRIPT.test(bin) ? { command: process.execPath, args: [bin, ...args] } : { command: bin, args };
+}
 
 function isFile(path: string): boolean {
   try {
@@ -66,7 +71,11 @@ export async function resolveClaudeBin(sources: ClaudeBinSources): Promise<strin
 
 export function readClaudeVersion(bin: string): Promise<string> {
   return new Promise((resolveVersion, reject) => {
-    const child = spawn(bin, ['--version'], { stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });
+    const command = claudeCommand(bin, ['--version']);
+    const child = spawn(command.command, command.args, {
+      stdio: ['ignore', 'pipe', 'ignore'],
+      windowsHide: true,
+    });
     let output = '';
     const timer = setTimeout(() => {
       child.kill();

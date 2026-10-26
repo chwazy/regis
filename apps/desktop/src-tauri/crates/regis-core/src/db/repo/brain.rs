@@ -6,16 +6,17 @@ use rusqlite::{params, params_from_iter, Connection, OptionalExtension};
 use serde_json::json;
 
 use super::{
-    delete, get, list, list_where, new_id, require, save_connector, text, upsert, upsert_items,
-    RepoError,
+    delete, enum_text, get, list, list_where, new_id, require, save_connector, text, upsert,
+    upsert_items, RepoError,
 };
 use crate::events::{iso_utc, now_iso_utc};
 use regis_model::SearchHit;
 use regis_model::{
     ChunkNeighbor, ChunkText, Connector, DocumentHit, Entity, EntityCard, EntityKind, EntityNote,
-    EntityStats, EntitySummary, EntitySynthesis, Fact, FactDecision, FactSource, FactStatus,
-    FactView, FileEntry, GlobalSearchResult, Item, ItemKind, ItemUpsert, Job, Link,
-    LinkProposalRow, LinkedDocument, LinkedEntity, MailHit, NoteHit, ProjectSummary, TimelineEntry,
+    EntityResource, EntityStats, EntitySummary, EntitySynthesis, Fact, FactDecision, FactSource,
+    FactStatus, FactView, FileEntry, GlobalSearchResult, Item, ItemKind, ItemUpsert, Job, Link,
+    LinkProposalRow, LinkedDocument, LinkedEntity, MailHit, NoteHit, ProjectSummary, ResourceKind,
+    TimelineEntry,
 };
 
 pub const BRAIN_CONNECTOR_KIND: &str = "brain";
@@ -100,6 +101,7 @@ pub fn save_entity(conn: &Connection, input: EntitySave) -> Result<Entity, RepoE
 }
 
 pub struct EntityUpdate {
+    pub name: Option<String>,
     pub kind: Option<EntityKind>,
     pub tags: Option<Vec<String>>,
 }
@@ -132,6 +134,13 @@ pub fn update_entity(
     update: EntityUpdate,
 ) -> Result<Entity, RepoError> {
     let mut entity: Entity = require(conn, id)?;
+    if let Some(name) = update.name {
+        let name = name.trim();
+        if name.is_empty() {
+            return Err(RepoError::Invalid("the entity name is empty".to_owned()));
+        }
+        name.clone_into(&mut entity.name);
+    }
     if let Some(kind) = update.kind {
         entity.kind = kind;
     }
@@ -324,6 +333,67 @@ pub fn decide_fact(
     fact.status = status;
     upsert(conn, &fact)?;
     Ok(Some(fact))
+}
+
+pub struct NewEntityResource {
+    pub entity_id: String,
+    pub kind: ResourceKind,
+    pub label: Option<String>,
+    pub value: String,
+}
+
+pub fn add_entity_resource(
+    conn: &Connection,
+    input: NewEntityResource,
+) -> Result<EntityResource, RepoError> {
+    let value = input.value.trim();
+    if value.is_empty() {
+        return Err(RepoError::Invalid("the resource value is empty".to_owned()));
+    }
+    require::<Entity>(conn, &input.entity_id)?;
+    let label = input
+        .label
+        .map(|label| label.trim().to_owned())
+        .filter(|label| !label.is_empty());
+    let existing: Vec<EntityResource> = list_where(
+        conn,
+        "entity_id = ?1 AND kind = ?2 AND value = ?3",
+        "rowid",
+        vec![
+            Value::Text(input.entity_id.clone()),
+            enum_text(&input.kind)?,
+            Value::Text(value.to_owned()),
+        ],
+    )?;
+    if let Some(mut resource) = existing.into_iter().next() {
+        if label.is_some() && resource.label != label {
+            resource.label = label;
+            upsert(conn, &resource)?;
+        }
+        return Ok(resource);
+    }
+    let resource = EntityResource {
+        id: new_id(),
+        entity_id: input.entity_id,
+        kind: input.kind,
+        label,
+        value: value.to_owned(),
+        created_at: now_iso_utc(),
+    };
+    upsert(conn, &resource)?;
+    Ok(resource)
+}
+
+pub fn list_entity_resources(
+    conn: &Connection,
+    entity_id: &str,
+) -> Result<Vec<EntityResource>, RepoError> {
+    list_where(
+        conn,
+        "entity_id = ?1",
+        "kind, created_at, rowid",
+        vec![Value::Text(entity_id.to_owned())],
+    )
 }
 
 pub fn list_chunk_texts(
@@ -960,6 +1030,7 @@ pub fn entity_card_at(
         stats,
         notes,
         facts,
+        resources: list_entity_resources(conn, id)?,
         projects,
         documents,
         timeline,
@@ -1013,6 +1084,7 @@ mod tests {
                     conn,
                     &saved.id,
                     EntityUpdate {
+                        name: None,
                         kind: Some(EntityKind::Other),
                         tags: None,
                     },
@@ -1027,6 +1099,7 @@ mod tests {
                     conn,
                     &saved.id,
                     EntityUpdate {
+                        name: None,
                         kind: None,
                         tags: Some(strings(&["compta", "#Compta", "annuel"])),
                     },

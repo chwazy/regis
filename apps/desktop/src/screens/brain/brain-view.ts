@@ -6,6 +6,7 @@ import type {
   EntitySummary,
   FactSource,
   FactStatus,
+  ResourceKind,
   TimelineEntry,
 } from '@regis/shared';
 import { formatDay, formatHours } from '../../lib/format';
@@ -23,6 +24,15 @@ export const KIND_LABELS: Record<EntityKind, string> = {
   project: 'Projet',
   contact: 'Contact',
   other: 'Autre',
+};
+
+export const RESOURCE_KIND_LABELS: Record<ResourceKind, string> = {
+  repo: 'Repo local',
+  remote: 'Remote git',
+  conventions: 'Conventions',
+  specs: 'Specs',
+  document: 'Document',
+  link: 'Lien',
 };
 
 export interface EntityGroup {

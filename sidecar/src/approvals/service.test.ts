@@ -99,6 +99,31 @@ describe('ApprovalService', () => {
     expect(calls).toEqual([{ connectorId: 'c1', tool: 'write_file', args: { path: 'a' } }]);
   });
 
+  it('hands late answers to a question back without running any tool', async () => {
+    const { service, calls, settled } = harness('10');
+    const questions = { questions: [{ question: 'Couleur ?', header: 'Couleur', options: [] }] };
+
+    const outcome = service.request('j1', 'AskUserQuestion', questions);
+    await vi.advanceTimersByTimeAsync(10_000);
+    await expect(outcome).resolves.toBe('deferred');
+    await service.resolve('ap1', {
+      status: 'edited',
+      updatedInput: { ...questions, answers: { 'Couleur ?': ['Rouge', 'Bleu'] } },
+    });
+
+    expect(calls).toEqual([]);
+    expect(settled).toEqual([
+      {
+        approvalId: 'ap1',
+        jobId: 'j1',
+        tool: 'AskUserQuestion',
+        status: 'edited',
+        ok: true,
+        result: '« Couleur ? » = « Rouge, Bleu »',
+      },
+    ]);
+  });
+
   it('reports the outcome of a deferred approval so the job can be resumed', async () => {
     const { service, settled } = harness('1');
     const approved = service.request('j1', WRITE_TOOL.qualifiedName, { path: 'a' });
