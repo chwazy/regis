@@ -191,13 +191,19 @@ export function buildClaudeArgs(
   toolFlags: ToolFlags,
   permissionTool?: string,
   referenceDirs: string[] = [],
+  loadUserConfig = false,
 ): string[] {
   const args = ['-p', '--output-format', 'stream-json', '--verbose'];
   // Liste variadique : toujours suivie d'une autre option.
   if (referenceDirs.length > 0) {
     args.push('--add-dir', ...referenceDirs);
   }
-  args.push('--setting-sources', 'project', '--strict-mcp-config', '--mcp-config', mcpConfigPath);
+  const settingSources = loadUserConfig ? 'user,project' : 'project';
+  args.push('--setting-sources', settingSources, '--strict-mcp-config', '--mcp-config', mcpConfigPath);
+  if (loadUserConfig) {
+    // Un defaultMode utilisateur (auto, acceptEdits…) approuverait des outils sans passer par la validation de Régis.
+    args.push('--permission-mode', 'default');
+  }
   if (input.agent.model) {
     args.push('--model', input.agent.model);
   }

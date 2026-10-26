@@ -1,10 +1,11 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { Agent, Connector } from '@regis/shared';
 import { ROUTES } from '../../app/routes';
 import { isAgentSimulated, type AgentActivity, type DetectResult } from '../agents/activity';
 import { ErrorMessage } from '../../components/ui/Feedback';
 import { errorMessage, formatUsd } from '../../lib/format';
+import { invokeCmd } from '../../lib/ipc';
 import {
   RUNTIME_OPTIONS,
   connectorIds,
@@ -14,6 +15,7 @@ import {
   type EditorSnapshot,
 } from './agent-labels';
 import styles from './agents.module.css';
+import { InstructionsEditor, agentInstructionsSetting } from './InstructionsEditor';
 import { RuntimeBadge } from './RuntimeBadge';
 
 export interface AgentTestOutcome {
@@ -111,6 +113,50 @@ function Switch({
       <span className={styles.switchTrack} aria-hidden="true" />
       {children}
     </label>
+  );
+}
+
+function UserConfigToggle({ agentId }: { agentId: string }) {
+  const settingKey = `agents.loadUserConfig.${agentId}`;
+  const [enabled, setEnabled] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    invokeCmd<string | null>('get_setting', { key: settingKey })
+      .then((value) => active && setEnabled(value === 'true'))
+      .catch((reason: unknown) => active && setError(errorMessage(reason)));
+    return () => {
+      active = false;
+    };
+  }, [settingKey]);
+
+  const change = (next: boolean) => {
+    setEnabled(next);
+    invokeCmd('set_setting', { key: settingKey, value: next ? 'true' : '' })
+      .then(() => setError(null))
+      .catch((reason: unknown) => {
+        setEnabled(!next);
+        setError(errorMessage(reason));
+      });
+  };
+
+  return (
+    <>
+      <div className={styles.toggleRow}>
+        <span className={styles.toggleText}>
+          <span className={styles.toggleTitle}>Charger ma config ~/.claude</span>
+          <span className={styles.hint}>
+            Tes skills, agents et plugins. Ton settings.json s’applique aussi : ses hooks tournent et ses
+            règles allow passent avant la validation de Régis.
+          </span>
+        </span>
+        <Switch checked={enabled} onChange={change}>
+          <span className="sr-only">Charger ma config ~/.claude</span>
+        </Switch>
+      </div>
+      <ErrorMessage>{error}</ErrorMessage>
+    </>
   );
 }
 
@@ -405,6 +451,19 @@ export function AgentEditor({
           />
         </Section>
 
+        {!isNew && (
+          <Section
+            wide
+            title="Instructions"
+            description="Ajoutées au prompt système de chaque tâche de cet agent, après les instructions globales."
+          >
+            <InstructionsEditor
+              settingKey={agentInstructionsSetting(draft.id)}
+              label={`Instructions de ${draft.name}`}
+            />
+          </Section>
+        )}
+
         <Section title="Capacités" description="Ce que l’agent a le droit de faire de lui-même.">
           <div className={styles.toggleRow}>
             <span className={styles.toggleText}>
@@ -424,6 +483,7 @@ export function AgentEditor({
               <span className="sr-only">Un git worktree par tâche</span>
             </Switch>
           </div>
+          {!isNew && draft.runtime === 'claude-cli' && <UserConfigToggle agentId={draft.id} />}
         </Section>
 
         <Section

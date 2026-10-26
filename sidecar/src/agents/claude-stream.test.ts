@@ -140,6 +140,20 @@ describe('buildClaudeArgs', () => {
     expect(args).not.toContain('--resume');
   });
 
+  it('loads the user ~/.claude configuration only when the agent opts in', () => {
+    const settingSources = (args: string[]) => args[args.indexOf('--setting-sources') + 1];
+
+    const withUserConfig = buildClaudeArgs(makeRunInput(), 'mcp.json', NO_TOOL_FLAGS, undefined, [], true);
+    expect(withUserConfig.slice(withUserConfig.indexOf('--permission-mode'))).toEqual(
+      expect.arrayContaining(['--permission-mode', 'default']),
+    );
+    expect(buildClaudeArgs(makeRunInput(), 'mcp.json', NO_TOOL_FLAGS)).not.toContain('--permission-mode');
+    expect(settingSources(buildClaudeArgs(makeRunInput(), 'mcp.json', NO_TOOL_FLAGS))).toBe('project');
+    expect(
+      settingSources(buildClaudeArgs(makeRunInput(), 'mcp.json', NO_TOOL_FLAGS, undefined, [], true)),
+    ).toBe('user,project');
+  });
+
   it('adds --resume only when resuming a session', () => {
     const resumed = buildClaudeArgs(
       makeRunInput({ sessionId: 's-1', resume: true }),
