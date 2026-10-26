@@ -6,7 +6,7 @@ import { createInterface } from 'node:readline';
 import spawn from 'cross-spawn';
 import type { Agent, Connector, ToolInfo } from '@regis/shared';
 import type { ConnectorLaunch } from '../mcp/host';
-import { FIXTURE_CLAUDE_VERSION, readClaudeVersion } from './claude-bin';
+import { FIXTURE_CLAUDE_VERSION, claudeCommand, readClaudeVersion } from './claude-bin';
 import { buildClaudeArgs, parseClaudeStreamLine } from './claude-stream';
 import {
   DriverUnavailableError,
@@ -152,7 +152,8 @@ export class ClaudeCliDriver implements AgentDriver {
     input: AgentRunInput,
     env: Record<string, string>,
   ): AsyncGenerator<AgentEvent> {
-    const child = spawn(bin, args, {
+    const command = claudeCommand(bin, args);
+    const child = spawn(command.command, command.args, {
       cwd: input.cwd,
       env,
       stdio: ['pipe', 'pipe', 'pipe'],
