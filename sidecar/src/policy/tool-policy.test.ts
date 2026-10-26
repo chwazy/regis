@@ -3,7 +3,11 @@ import type { Approval, ToolInfo } from '@regis/shared';
 import { createApprove } from '../regis-mcp/approve';
 import { ApprovalService, DEFERRED_DENY_MESSAGE } from '../approvals/service';
 import { makeAgent } from '../agents/test-support';
-import { REGIS_BRAIN_ADD_FACT_TOOL, REGIS_BRAIN_READ_TOOLS } from '../regis-mcp/brain-tools';
+import {
+  REGIS_BRAIN_ADD_FACT_TOOL,
+  REGIS_BRAIN_READ_TOOLS,
+  REGIS_BRAIN_WRITE_TOOLS,
+} from '../regis-mcp/brain-tools';
 import { REGIS_JOB_TOOLS } from '../regis-mcp/jobs-tools';
 import { REGIS_RENDER_TEMPLATE_TOOL } from '../regis-mcp/template-tools';
 import type { PolicyRule } from './resolve';
@@ -98,6 +102,26 @@ describe('createToolPolicy buildToolFlags', () => {
     expect(unruled.allowed).not.toContain(REGIS_BRAIN_ADD_FACT_TOOL);
     expect(automatic.allowed).toContain(REGIS_BRAIN_ADD_FACT_TOOL);
     expect(denied.disallowed).toContain(REGIS_BRAIN_ADD_FACT_TOOL);
+  });
+
+  it('lets an agent rule open every brain write tool while the default keeps asking', async () => {
+    const rules: PolicyRule[] = [
+      { agentId: null, toolPattern: 'mcp__regis__brain_*', policy: 'ask' },
+      { agentId: 'writer', toolPattern: 'mcp__regis__brain_*', policy: 'auto' },
+      { agentId: 'reader', toolPattern: 'mcp__regis__brain_*', policy: 'deny' },
+    ];
+
+    const writer = await policyWithRules(rules).buildToolFlags(makeAgent({ id: 'writer' }), []);
+    const reader = await policyWithRules(rules).buildToolFlags(makeAgent({ id: 'reader' }), []);
+    const other = await policyWithRules(rules).buildToolFlags(makeAgent({ id: 'other' }), []);
+
+    expect(writer.allowed).toEqual(expect.arrayContaining(REGIS_BRAIN_WRITE_TOOLS));
+    expect(reader.disallowed).toEqual(expect.arrayContaining(REGIS_BRAIN_WRITE_TOOLS));
+    expect(reader.allowed).toEqual(expect.arrayContaining(REGIS_BRAIN_READ_TOOLS));
+    for (const tool of REGIS_BRAIN_WRITE_TOOLS) {
+      expect(other.allowed).not.toContain(tool);
+      expect(other.disallowed).not.toContain(tool);
+    }
   });
 
   it('allows render_template only when a rule makes it automatic', async () => {

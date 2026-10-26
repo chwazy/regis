@@ -29,6 +29,12 @@ const MIGRATIONS: &[Migration] = &[
         sql: include_str!("migrations/0002_reference_sources.sql"),
         rebuilds_tables: false,
     },
+    Migration {
+        version: 3,
+        name: "0003_entity_resources",
+        sql: include_str!("migrations/0003_entity_resources.sql"),
+        rebuilds_tables: false,
+    },
 ];
 
 type AutoExtensionInit = unsafe extern "C" fn(
@@ -211,7 +217,7 @@ mod tests {
     fn open_applies_migrations_and_loads_vec() {
         let path = temp_db_path("migrations");
         let db = Db::open(&path).expect("open db");
-        assert_eq!(db.schema_version().expect("schema version"), 2);
+        assert_eq!(db.schema_version().expect("schema version"), 3);
         let vec_version = db.vec_version().expect("vec version");
         assert!(
             vec_version.starts_with('v'),
@@ -219,7 +225,7 @@ mod tests {
         );
         drop(db);
         let reopened = Db::open(&path).expect("reopen db");
-        assert_eq!(reopened.schema_version().expect("schema version"), 2);
+        assert_eq!(reopened.schema_version().expect("schema version"), 3);
     }
 
     #[test]
@@ -231,6 +237,7 @@ mod tests {
             "entities",
             "links",
             "facts",
+            "entity_resources",
             "file_sources",
             "files",
             "chunks",

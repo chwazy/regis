@@ -31,6 +31,7 @@ function card(overrides: Partial<EntityCard> = {}): EntityCard {
     stats: { hoursLast30Days: 0, lastMessageAt: null },
     notes: [],
     facts: [],
+    resources: [],
     projects: [],
     documents: [],
     timeline: [{ id: 'I1', kind: 'message', at: NOW.toISOString(), text: 'Alarme récurrente cave 2' }],

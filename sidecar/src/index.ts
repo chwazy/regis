@@ -228,6 +228,7 @@ const brainTools = createBrainTools({
   search: (query) => server.call<GlobalSearchResult>('store.brain.search', { q: query }),
   getEntityCard: (id) => server.call<EntityCard>('store.brain.entityCard', { id }),
   store: brainStore,
+  onNoteAdded: () => brainService.requestRun(),
 });
 
 const regisServer: RegisMcpServer = new RegisMcpServer({

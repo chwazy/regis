@@ -8,10 +8,10 @@ import { formatDay, formatHours } from '../../lib/format';
 import { entityPath } from '../../lib/paths';
 import { useTimezone } from '../../lib/use-timezone';
 import { transcriptLinkState } from '../transcript/transcript-view';
-import { TIMELINE_KIND_LABELS, timelineAnchor, timelineTarget } from './brain-view';
+import { RESOURCE_KIND_LABELS, TIMELINE_KIND_LABELS, timelineAnchor, timelineTarget } from './brain-view';
 import styles from './brain.module.css';
 
-type ActivityTab = 'timeline' | 'projects' | 'documents';
+type ActivityTab = 'timeline' | 'projects' | 'documents' | 'resources';
 
 const ID_PREFIX = 'activity';
 
@@ -22,6 +22,7 @@ export function ActivityTabs({ card }: { card: EntityCard }) {
     { id: 'timeline', label: <TabLabel text="Historique" count={card.timeline.length} /> },
     { id: 'projects', label: <TabLabel text="Projets" count={card.projects.length} /> },
     { id: 'documents', label: <TabLabel text="Documents" count={card.documents.length} /> },
+    { id: 'resources', label: <TabLabel text="Ressources" count={card.resources.length} /> },
   ] as const;
 
   return (
@@ -81,6 +82,18 @@ export function ActivityTabs({ card }: { card: EntityCard }) {
                 <span className={styles.ext}>{document.ext.toUpperCase() || '—'}</span>
                 <span className={styles.rowLabel}>{document.name}</span>
                 <span className={styles.rowEndText}>{document.origin === 'auto' ? 'Auto' : 'Lié'}</span>
+              </div>
+            ))}
+          </>
+        )}
+        {tab === 'resources' && (
+          <>
+            {card.resources.length === 0 && <p className={styles.empty}>Aucune ressource rattachée.</p>}
+            {card.resources.map((resource) => (
+              <div key={resource.id} className={styles.row}>
+                <span className={styles.timelineKind}>{RESOURCE_KIND_LABELS[resource.kind]}</span>
+                <span className={styles.rowLabel}>{resource.label ?? resource.value}</span>
+                {resource.label && <span className={styles.rowEndText}>{resource.value}</span>}
               </div>
             ))}
           </>

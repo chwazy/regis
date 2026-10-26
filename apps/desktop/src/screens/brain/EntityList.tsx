@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import type { EntityKind, EntitySummary } from '@regis/shared';
+import { useMemo, useState } from 'react';
+import type { EntitySummary } from '@regis/shared';
 import { ErrorMessage } from '../../components/ui/Feedback';
 import controls from '../../components/ui/controls.module.css';
-import { KIND_GROUPS, KIND_LABELS, allTags, groupEntities } from './brain-view';
+import { allTags, groupEntities } from './brain-view';
 import styles from './brain.module.css';
 
 interface EntityListProps {
@@ -12,89 +12,10 @@ interface EntityListProps {
   error: string | null;
   onQueryChange: (query: string) => void;
   onSelect: (id: string) => void;
-  onChangeKind: (id: string, kind: EntityKind) => void;
 }
 
-const MENU_WIDTH = 180;
-const MENU_HEIGHT = 190;
-
-interface KindMenuState {
-  entityId: string;
-  kind: EntityKind;
-  x: number;
-  y: number;
-}
-
-function KindMenu({
-  menu,
-  onPick,
-  onClose,
-}: {
-  menu: KindMenuState;
-  onPick: (kind: EntityKind) => void;
-  onClose: () => void;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    ref.current?.querySelector<HTMLButtonElement>('[aria-checked="true"]')?.focus();
-    const closeOnOutside = (event: MouseEvent) => {
-      if (!ref.current?.contains(event.target as Node)) {
-        onClose();
-      }
-    };
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    };
-    document.addEventListener('mousedown', closeOnOutside);
-    document.addEventListener('keydown', closeOnEscape);
-    window.addEventListener('blur', onClose);
-    return () => {
-      document.removeEventListener('mousedown', closeOnOutside);
-      document.removeEventListener('keydown', closeOnEscape);
-      window.removeEventListener('blur', onClose);
-    };
-  }, [onClose]);
-
-  return (
-    <div
-      ref={ref}
-      role="menu"
-      aria-label="Catégorie"
-      className={styles.contextMenu}
-      style={{ left: menu.x, top: menu.y }}
-    >
-      <span className={styles.contextMenuTitle}>Catégorie</span>
-      {KIND_GROUPS.map((group) => (
-        <button
-          key={group.kind}
-          type="button"
-          role="menuitemradio"
-          aria-checked={menu.kind === group.kind}
-          className={styles.contextMenuItem}
-          onClick={() => onPick(group.kind)}
-        >
-          {KIND_LABELS[group.kind]}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-export function EntityList({
-  entities,
-  selectedId,
-  query,
-  error,
-  onQueryChange,
-  onSelect,
-  onChangeKind,
-}: EntityListProps) {
+export function EntityList({ entities, selectedId, query, error, onQueryChange, onSelect }: EntityListProps) {
   const [tag, setTag] = useState<string | null>(null);
-  const [menu, setMenu] = useState<KindMenuState | null>(null);
-  const closeMenu = useMemo(() => () => setMenu(null), []);
   const tags = useMemo(() => allTags(entities), [entities]);
   const activeTag = tag !== null && tags.includes(tag) ? tag : null;
   const groups = groupEntities(entities, activeTag);
@@ -139,15 +60,6 @@ export function EntityList({
                 aria-current={entity.id === selectedId ? 'true' : undefined}
                 className={entity.id === selectedId ? styles.entityRowActive : styles.entityRow}
                 onClick={() => onSelect(entity.id)}
-                onContextMenu={(event) => {
-                  event.preventDefault();
-                  setMenu({
-                    entityId: entity.id,
-                    kind: entity.kind,
-                    x: Math.min(event.clientX, window.innerWidth - MENU_WIDTH),
-                    y: Math.min(event.clientY, window.innerHeight - MENU_HEIGHT),
-                  });
-                }}
               >
                 <span className={styles.entityName}>{entity.name}</span>
                 {meta && <span className={styles.entityMeta}>{meta}</span>}
@@ -157,18 +69,6 @@ export function EntityList({
         ))}
         {groups.length === 0 && !error && <p className={styles.empty}>Aucune entité.</p>}
       </div>
-      {menu && (
-        <KindMenu
-          menu={menu}
-          onClose={closeMenu}
-          onPick={(kind) => {
-            setMenu(null);
-            if (kind !== menu.kind) {
-              onChangeKind(menu.entityId, kind);
-            }
-          }}
-        />
-      )}
     </aside>
   );
 }

@@ -2,6 +2,7 @@ import type {
   ChunkNeighbor,
   ChunkText,
   Entity,
+  EntityResource,
   Fact,
   FileEntry,
   Item,
@@ -9,7 +10,14 @@ import type {
   Link,
   LinkProposalRow,
 } from '@regis/shared';
-import type { BrainStore, EntityInput, FactInput } from './store';
+import type {
+  BrainStore,
+  EntityInput,
+  EntityLinkInput,
+  EntityUpdateInput,
+  FactInput,
+  ResourceInput,
+} from './store';
 
 export interface MemoryBrainStore extends BrainStore {
   entities: Entity[];
@@ -17,6 +25,7 @@ export interface MemoryBrainStore extends BrainStore {
   items: Item[];
   files: FileEntry[];
   facts: Fact[];
+  resources: EntityResource[];
   chunks: Map<string, ChunkText[]>;
   neighborsByFile: Map<string, ChunkNeighbor[]>;
   settings: Map<string, string>;
@@ -70,6 +79,7 @@ export function createMemoryBrainStore(
     items: seed.items ?? [],
     files: seed.files ?? [],
     facts: [],
+    resources: [],
     chunks: new Map(),
     neighborsByFile: new Map(),
     settings: new Map(),
@@ -93,6 +103,31 @@ export function createMemoryBrainStore(
         : [...store.entities, entity];
       return Promise.resolve(entity);
     },
+    updateEntity: (input: EntityUpdateInput) => {
+      const existing = store.entities.find((entity) => entity.id === input.id);
+      if (!existing) {
+        return Promise.reject(new Error(`entities ${input.id} not found`));
+      }
+      const entity: Entity = {
+        ...existing,
+        ...(input.name === undefined ? {} : { name: input.name.trim() }),
+        ...(input.kind === undefined ? {} : { kind: input.kind }),
+        ...(input.tags === undefined ? {} : { tagsJson: input.tags }),
+        updatedAt: NOW,
+      };
+      store.entities = store.entities.map((candidate) => (candidate.id === entity.id ? entity : candidate));
+      return Promise.resolve(entity);
+    },
+    linkEntities: (input: EntityLinkInput) =>
+      store.insertAutoLinks([
+        {
+          fromType: 'entity',
+          fromId: input.fromEntityId,
+          toEntityId: input.toEntityId,
+          rel: input.rel,
+          confidence: null,
+        },
+      ]),
     insertAutoLinks: (rows: LinkProposalRow[]) => {
       let inserted = 0;
       for (const row of rows) {
@@ -127,6 +162,68 @@ export function createMemoryBrainStore(
       const fact: Fact = { id: nextId('F'), createdAt: NOW, ...input };
       store.facts.push(fact);
       return Promise.resolve(fact);
+    },
+    decideFact: (id, decision) => {
+      if (decision === 'rejected') {
+        store.facts = store.facts.filter((fact) => fact.id !== id);
+        return Promise.resolve(null);
+      }
+      const fact = store.facts.find((candidate) => candidate.id === id);
+      if (!fact) {
+        return Promise.reject(new Error(`facts ${id} not found`));
+      }
+      fact.status = decision;
+      return Promise.resolve(fact);
+    },
+    addNote: (entityId, text) => {
+      const note = makeItem({
+        id: nextId('N'),
+        kind: 'note',
+        connectorId: 'c-brain',
+        title: text,
+        bodyText: text,
+      });
+      store.items.push(note);
+      store.links.push({
+        id: nextId('L'),
+        fromType: 'item',
+        fromId: note.id,
+        toType: 'entity',
+        toId: entityId,
+        rel: 'about',
+        origin: 'user',
+        confidence: null,
+        createdAt: NOW,
+      });
+      return Promise.resolve(note);
+    },
+    addResource: (input: ResourceInput) => {
+      if (!store.entities.some((entity) => entity.id === input.entityId)) {
+        return Promise.reject(new Error(`entities ${input.entityId} not found`));
+      }
+      const value = input.value.trim();
+      const existing = store.resources.find(
+        (resource) =>
+          resource.entityId === input.entityId && resource.kind === input.kind && resource.value === value,
+      );
+      if (existing) {
+        return Promise.resolve(existing);
+      }
+      const resource: EntityResource = {
+        id: nextId('R'),
+        entityId: input.entityId,
+        kind: input.kind,
+        label: input.label?.trim() || null,
+        value,
+        createdAt: NOW,
+      };
+      store.resources.push(resource);
+      return Promise.resolve(resource);
+    },
+    deleteResource: (id) => {
+      const before = store.resources.length;
+      store.resources = store.resources.filter((resource) => resource.id !== id);
+      return Promise.resolve(store.resources.length < before);
     },
     deleteFact: (id) => {
       store.facts = store.facts.filter((fact) => fact.id !== id);

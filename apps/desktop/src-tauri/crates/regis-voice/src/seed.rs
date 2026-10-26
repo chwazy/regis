@@ -30,6 +30,8 @@ const DEFAULT_TOOL_POLICIES: &[(&str, Policy)] = &[
 const DASHBOARD_SEED_KEY: &str = "seed.dashboard";
 const BRAIN_POLICIES_SEED_KEY: &str = "seed.brainToolPolicies";
 const BRAIN_TOOL_POLICIES: &[(&str, Policy)] = &[("mcp__regis__brain_add_fact", Policy::Auto)];
+const BRAIN_WRITE_POLICIES_SEED_KEY: &str = "seed.brainWriteToolPolicies";
+const BRAIN_WRITE_TOOL_POLICIES: &[(&str, Policy)] = &[("mcp__regis__brain_*", Policy::Ask)];
 const TEMPLATE_POLICIES_SEED_KEY: &str = "seed.templateToolPolicies";
 const TEMPLATE_TOOL_POLICIES: &[(&str, Policy)] = &[("mcp__regis__render_template", Policy::Auto)];
 const MINUTES_TEMPLATE_SEED_KEY: &str = "seed.minutesTemplate";
@@ -55,8 +57,9 @@ pub fn seed_defaults(db: &Db, data_dir: &Path) -> Result<(), SeedError> {
     seed_agents(db)?;
     seed_tool_policies(db)?;
     seed_brain_connector(db)?;
-    seed_brain_tool_policies(db)?;
-    seed_template_tool_policies(db)?;
+    seed_global_policies_once(db, BRAIN_POLICIES_SEED_KEY, BRAIN_TOOL_POLICIES)?;
+    seed_global_policies_once(db, BRAIN_WRITE_POLICIES_SEED_KEY, BRAIN_WRITE_TOOL_POLICIES)?;
+    seed_global_policies_once(db, TEMPLATE_POLICIES_SEED_KEY, TEMPLATE_TOOL_POLICIES)?;
     seed_minutes_template(db, data_dir)?;
     seed_dashboard(db)?;
     seed_local_modules(db, data_dir)
@@ -164,12 +167,16 @@ fn seed_brain_connector(db: &Db) -> Result<(), SeedError> {
     Ok(())
 }
 
-fn seed_brain_tool_policies(db: &Db) -> Result<(), SeedError> {
+fn seed_global_policies_once(
+    db: &Db,
+    seed_key: &str,
+    policies: &[(&str, Policy)],
+) -> Result<(), SeedError> {
     db.with_conn(|conn| {
-        if repo::get_setting(conn, BRAIN_POLICIES_SEED_KEY)?.is_some() {
+        if repo::get_setting(conn, seed_key)?.is_some() {
             return Ok(());
         }
-        for (pattern, policy) in BRAIN_TOOL_POLICIES {
+        for (pattern, policy) in policies {
             repo::save_policy(
                 conn,
                 ToolPolicy {
@@ -180,28 +187,7 @@ fn seed_brain_tool_policies(db: &Db) -> Result<(), SeedError> {
                 },
             )?;
         }
-        repo::set_setting(conn, BRAIN_POLICIES_SEED_KEY, "done")
-    })?;
-    Ok(())
-}
-
-fn seed_template_tool_policies(db: &Db) -> Result<(), SeedError> {
-    db.with_conn(|conn| {
-        if repo::get_setting(conn, TEMPLATE_POLICIES_SEED_KEY)?.is_some() {
-            return Ok(());
-        }
-        for (pattern, policy) in TEMPLATE_TOOL_POLICIES {
-            repo::save_policy(
-                conn,
-                ToolPolicy {
-                    id: String::new(),
-                    agent_id: None,
-                    tool_pattern: (*pattern).to_owned(),
-                    policy: *policy,
-                },
-            )?;
-        }
-        repo::set_setting(conn, TEMPLATE_POLICIES_SEED_KEY, "done")
+        repo::set_setting(conn, seed_key, "done")
     })?;
     Ok(())
 }
@@ -483,7 +469,10 @@ mod tests {
         let policies: Vec<ToolPolicy> = db.with_conn(|conn| repo::list(conn)).expect("list");
         assert_eq!(
             policies.len(),
-            DEFAULT_TOOL_POLICIES.len() + BRAIN_TOOL_POLICIES.len() + TEMPLATE_TOOL_POLICIES.len()
+            DEFAULT_TOOL_POLICIES.len()
+                + BRAIN_TOOL_POLICIES.len()
+                + BRAIN_WRITE_TOOL_POLICIES.len()
+                + TEMPLATE_TOOL_POLICIES.len()
         );
         let send = policies
             .iter()

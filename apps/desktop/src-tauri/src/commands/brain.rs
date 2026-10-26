@@ -93,7 +93,17 @@ pub async fn update_entity(
 ) -> Result<Entity, String> {
     state
         .db
-        .with_conn(|conn| repo::update_entity(conn, &id, repo::EntityUpdate { kind, tags }))
+        .with_conn(|conn| {
+            repo::update_entity(
+                conn,
+                &id,
+                repo::EntityUpdate {
+                    name: None,
+                    kind,
+                    tags,
+                },
+            )
+        })
         .map_err(describe)
 }
 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import type { Entity, EntityCard as EntityCardData, EntityKind, EntitySummary } from '@regis/shared';
+import type { EntityCard as EntityCardData, EntitySummary } from '@regis/shared';
 import { ErrorMessage, Loading } from '../../components/ui/Feedback';
 import controls from '../../components/ui/controls.module.css';
 import { PageHeader } from '../../components/ui/PageHeader';
@@ -98,16 +98,6 @@ export default function BrainScreen() {
       .catch((reason: unknown) => setCardError(errorMessage(reason)));
   };
 
-  const updateEntity = (id: string, changes: { kind?: EntityKind; tags?: string[] }) => {
-    invokeCmd<Entity>('update_entity', {
-      id,
-      kind: changes.kind ?? null,
-      tags: changes.tags ?? null,
-    })
-      .then(refresh)
-      .catch((reason: unknown) => setCardError(errorMessage(reason)));
-  };
-
   const refreshSynthesis = () => {
     if (!card) {
       return;
@@ -158,7 +148,6 @@ export default function BrainScreen() {
           error={listError}
           onQueryChange={setQuery}
           onSelect={select}
-          onChangeKind={(id, kind) => updateEntity(id, { kind })}
         />
         <div className={styles.main}>
           <ErrorMessage>{cardError}</ErrorMessage>
@@ -167,8 +156,6 @@ export default function BrainScreen() {
               card={shownCard}
               synthesisRequested={pendingSynthesisFor === shownCard.entity.id}
               onDecideFact={decideFact}
-              onChangeKind={(kind) => updateEntity(shownCard.entity.id, { kind })}
-              onChangeTags={(tags) => updateEntity(shownCard.entity.id, { tags })}
               onRefreshSynthesis={refreshSynthesis}
             />
           )}

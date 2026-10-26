@@ -22,6 +22,7 @@ async function connected() {
               stats: { hoursLast30Days: 0, lastMessageAt: null },
               notes: [],
               facts: [],
+              resources: [],
               projects: [],
               documents: [],
               timeline: [],
@@ -67,7 +68,7 @@ describe('regis brain tools', () => {
     await Promise.all(stops.splice(0).map((stop) => stop()));
   });
 
-  it('exposes the three brain tools next to approve', async () => {
+  it('exposes the brain read and write tools next to approve', async () => {
     const { client, stop } = await connected();
     stops.push(stop);
 
@@ -76,8 +77,15 @@ describe('regis brain tools', () => {
     expect(tools.map((tool) => tool.name).sort()).toEqual([
       'approve',
       'brain_add_fact',
+      'brain_add_note',
+      'brain_add_resource',
+      'brain_create_entity',
       'brain_get_entity',
+      'brain_link_entities',
+      'brain_remove_resource',
       'brain_search',
+      'brain_set_fact_status',
+      'brain_update_entity',
     ]);
   });
 
