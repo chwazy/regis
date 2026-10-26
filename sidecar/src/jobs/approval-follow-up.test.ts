@@ -4,6 +4,22 @@ import { approvalFollowUpMessage } from './approval-follow-up';
 const BASE = { approvalId: 'ap1', jobId: 'j1', tool: 'mcp__x__send' };
 
 describe('approvalFollowUpMessage', () => {
+  it('hands the late answers of a question back to the agent', () => {
+    const question = { ...BASE, tool: 'AskUserQuestion' };
+
+    expect(
+      approvalFollowUpMessage({
+        ...question,
+        status: 'edited',
+        ok: true,
+        result: '« Couleur ? » = « Rouge »',
+      }),
+    ).toContain('a répondu à ta question : « Couleur ? » = « Rouge »');
+    expect(approvalFollowUpMessage({ ...question, status: 'rejected', ok: false })).toContain(
+      'n’a pas répondu',
+    );
+  });
+
   it('tells the agent the action was executed with its result', () => {
     const message = approvalFollowUpMessage({ ...BASE, status: 'approved', ok: true, result: { id: 7 } });
 

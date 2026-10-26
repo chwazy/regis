@@ -1,0 +1,64 @@
+{
+  "_meta": {
+    "source": "claude-cli",
+    "toolVersion": "2.1.310 (Claude Code)",
+    "capturedAt": "2026-10-26T15:44:30.078Z",
+    "command": "claude -p \"Before answering, use the AskUserQuestion tool to ask me which color I prefer, with exactly two options: Red and Blue. Then reply in one short sentence naming the color I chose.\" --output-format stream-json --verbose --setting-sources project --strict-mcp-config --disable-slash-commands --no-session-persistence --model haiku --permission-prompt-tool mcp__regis-test__approve --mcp-config <mcp-config.json>",
+    "synthetic": false
+  },
+  "request": {
+    "tool_name": "AskUserQuestion",
+    "input": {
+      "questions": [
+        {
+          "question": "Which color do you prefer?",
+          "header": "Color",
+          "options": [
+            {
+              "label": "Red",
+              "description": "Choose red."
+            },
+            {
+              "label": "Blue",
+              "description": "Choose blue."
+            }
+          ],
+          "multiSelect": false
+        }
+      ]
+    },
+    "tool_use_id": "toolu_01Gnqu5xvfTBiCKt5ed3X6DZ"
+  },
+  "allowResponse": {
+    "behavior": "allow"
+  },
+  "denyResponse": {
+    "behavior": "deny",
+    "message": "Denied by the regis-test permission server."
+  },
+  "allRequestsSeen": [
+    {
+      "tool_name": "AskUserQuestion",
+      "input": {
+        "questions": [
+          {
+            "question": "Which color do you prefer?",
+            "header": "Color",
+            "options": [
+              {
+                "label": "Red",
+                "description": "Choose red."
+              },
+              {
+                "label": "Blue",
+                "description": "Choose blue."
+              }
+            ],
+            "multiSelect": false
+          }
+        ]
+      },
+      "tool_use_id": "toolu_01Gnqu5xvfTBiCKt5ed3X6DZ"
+    }
+  ]
+}

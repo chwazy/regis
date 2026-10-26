@@ -101,6 +101,14 @@ describe('parseClaudeStreamLine', () => {
     expect(events.at(-1)).toMatchObject({ type: 'end', isError: false });
   });
 
+  it('replays an answered AskUserQuestion on ask-user-question.ndjson', () => {
+    const events = replay('ask-user-question');
+
+    expect(events).toContainEqual(expect.objectContaining({ type: 'tool_call', tool: 'AskUserQuestion' }));
+    expect(events).toContainEqual(expect.objectContaining({ type: 'tool_result', ok: true }));
+    expect(events).toContainEqual({ type: 'message', text: 'You chose red.' });
+  });
+
   it('keeps internal tool calls and flags refused tool results on permission-deny.ndjson', () => {
     const events = replay('permission-deny');
 

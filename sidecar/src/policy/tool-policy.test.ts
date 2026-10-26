@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Approval, ToolInfo } from '@regis/shared';
 import { createApprove } from '../regis-mcp/approve';
-import { ApprovalService, DEFERRED_DENY_MESSAGE } from '../approvals/service';
+import { ASK_USER_QUESTION_TOOL } from '../approvals/questions';
+import { ApprovalService, DEFERRED_DENY_MESSAGE, type ApprovalDecision } from '../approvals/service';
 import { makeAgent } from '../agents/test-support';
 import {
   REGIS_BRAIN_ADD_FACT_TOOL,
@@ -66,6 +67,60 @@ describe('tool policy approval timeout', () => {
     await vi.advanceTimersByTimeAsync(WAIT_TIMEOUT_SEC * 1000);
 
     await expect(reply).resolves.toEqual({ behavior: 'deny', message: DEFERRED_DENY_MESSAGE });
+  });
+});
+
+describe('createToolPolicy AskUserQuestion', () => {
+  const QUESTIONS = { questions: [{ question: 'Quelle couleur ?', header: 'Couleur', options: [] }] };
+  const authorizeQuestion = (rules: PolicyRule[], decision: ApprovalDecision | 'deferred') => {
+    const requested: string[] = [];
+    const policy = createToolPolicy({
+      listRules: () => Promise.resolve(rules),
+      approvals: {
+        request: (_jobId, tool) => {
+          requested.push(tool);
+          return Promise.resolve(decision);
+        },
+      },
+    });
+    const result = policy.authorize({
+      agentId: 'a1',
+      jobId: 'j1',
+      qualifiedName: ASK_USER_QUESTION_TOOL,
+      access: 'write',
+      input: QUESTIONS,
+    });
+    return { result, requested };
+  };
+
+  it('always asks the user, even when a rule makes the tool automatic', async () => {
+    const answered = { ...QUESTIONS, answers: { 'Quelle couleur ?': 'Rouge' } };
+    const { result, requested } = authorizeQuestion([{ agentId: null, toolPattern: '*', policy: 'auto' }], {
+      status: 'edited',
+      updatedInput: answered,
+    });
+
+    await expect(result).resolves.toEqual({ allow: true, updatedInput: answered });
+    expect(requested).toEqual([ASK_USER_QUESTION_TOOL]);
+  });
+
+  it('denies without asking when a rule forbids questions', async () => {
+    const { result, requested } = authorizeQuestion(
+      [{ agentId: null, toolPattern: ASK_USER_QUESTION_TOOL, policy: 'deny' }],
+      'deferred',
+    );
+
+    await expect(result).resolves.toMatchObject({ allow: false });
+    expect(requested).toEqual([]);
+  });
+
+  it('denies an approval that carries no answer', async () => {
+    const { result } = authorizeQuestion([], { status: 'approved' });
+
+    await expect(result).resolves.toEqual({
+      allow: false,
+      message: 'L’utilisateur n’a pas répondu à la question.',
+    });
   });
 });
 

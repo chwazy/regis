@@ -1,6 +1,7 @@
 import type { Agent, ToolAccess, ToolInfo } from '@regis/shared';
 import { BUILT_IN_WRITE_TOOLS } from '../agents/deny-writes-policy';
 import type { AgentToolPolicy, ToolDecision, ToolFlags } from '../agents/driver';
+import { hasAnswers, isUserQuestion } from '../approvals/questions';
 import { DEFERRED_DENY_MESSAGE, type ApprovalDecision } from '../approvals/service';
 import { REGIS_BRAIN_READ_TOOLS, REGIS_BRAIN_WRITE_TOOLS } from '../regis-mcp/brain-tools';
 import { REGIS_JOB_TOOLS } from '../regis-mcp/jobs-tools';
@@ -48,7 +49,8 @@ export function createToolPolicy(deps: ToolPolicyDeps): RegisToolPolicy {
 
   const authorize = async (request: ToolAuthorization): Promise<ToolDecision> => {
     const { policy } = await resolve(request.agentId, request.qualifiedName, request.access);
-    if (policy === 'auto') {
+    const question = isUserQuestion(request.qualifiedName);
+    if (policy === 'auto' && !question) {
       return { allow: true };
     }
     if (policy === 'deny') {
@@ -60,6 +62,9 @@ export function createToolPolicy(deps: ToolPolicyDeps): RegisToolPolicy {
     }
     if (decision.status === 'rejected') {
       return { allow: false, message: decision.note?.trim() || 'Action rejetée par l’utilisateur' };
+    }
+    if (question && !(decision.status === 'edited' && hasAnswers(decision.updatedInput))) {
+      return { allow: false, message: 'L’utilisateur n’a pas répondu à la question.' };
     }
     return decision.status === 'edited' && decision.updatedInput !== undefined
       ? { allow: true, updatedInput: decision.updatedInput }

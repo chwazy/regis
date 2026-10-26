@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type SyntheticEvent } from 'react';
 import { Link } from 'react-router';
-import type { Agent, Job, JobEvent } from '@regis/shared';
+import type { Agent, Approval, Job, JobEvent } from '@regis/shared';
+import { useApprovalsReview } from '../app/approvals-review';
 import { errorMessage } from '../lib/format';
 import { invokeCmd, onRegisEvent, sidecarCall } from '../lib/ipc';
 import { jobPath } from '../lib/paths';
@@ -11,6 +12,8 @@ import { useDictationField } from '../lib/use-dictation';
 import { buildChatTimeline, type ChatItem } from './chat-messages';
 import { DictationButton } from './DictationButton';
 import { Markdown } from './Markdown';
+import { answeredInput, readUserQuestions, type QuestionAnswers } from './user-question';
+import { UserQuestionForm } from './UserQuestionForm';
 import styles from './ChatPanel.module.css';
 import controls from './ui/controls.module.css';
 
@@ -110,6 +113,8 @@ export function ChatPanel({ chatJobId = null, onChatJobChange }: ChatPanelProps)
   const [sending, setSending] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [answering, setAnswering] = useState(false);
+  const { pending } = useApprovalsReview();
 
   const { ref: fieldRef, remember, onText: insertText } = useDictationField(draft, setDraft);
 
@@ -167,6 +172,21 @@ export function ChatPanel({ chatJobId = null, onChatJobChange }: ChatPanelProps)
 
   const timeline = useMemo(() => (chat ? buildChatTimeline(chat, events, jobs) : []), [chat, events, jobs]);
   const busy = chat !== null && isActive(chat.status);
+  const question = pending.find((approval) => approval.jobId === currentId && readUserQuestions(approval));
+  const questions = question ? readUserQuestions(question) : null;
+
+  const resolveQuestion = (approval: Approval, answers: QuestionAnswers | null) => {
+    setAnswering(true);
+    setError(null);
+    invokeCmd<Approval>('resolve_approval', {
+      id: approval.id,
+      status: answers ? 'edited' : 'rejected',
+      decisionNote: null,
+      editedInput: answers ? answeredInput(approval.inputJson, answers) : null,
+    })
+      .catch(reportError)
+      .finally(() => setAnswering(false));
+  };
   const chatAgent = chat ? agents.find((agent) => agent.id === chat.agentId) : undefined;
 
   const send = (event: SyntheticEvent) => {
@@ -233,7 +253,11 @@ export function ChatPanel({ chatJobId = null, onChatJobChange }: ChatPanelProps)
           <li className={styles.hint}>Décris ce que tu veux faire : l’orchestrateur délègue aux agents.</li>
         )}
         <ChatTranscriptItems items={timeline} />
-        {busy && <li className={styles.hint}>L’orchestrateur travaille…</li>}
+        {busy && (
+          <li className={styles.hint}>
+            {question ? 'L’orchestrateur attend ta réponse.' : 'L’orchestrateur travaille…'}
+          </li>
+        )}
         {chat?.status === 'failed' && chat.error && (
           <li className={styles.jobError}>
             <ErrorMessage>{chat.error}</ErrorMessage>
@@ -243,6 +267,17 @@ export function ChatPanel({ chatJobId = null, onChatJobChange }: ChatPanelProps)
       {error && (
         <div className={styles.error}>
           <ErrorMessage>{error}</ErrorMessage>
+        </div>
+      )}
+      {question && questions && (
+        <div className={styles.question}>
+          <UserQuestionForm
+            key={question.id}
+            questions={questions}
+            busy={answering}
+            onAnswer={(answers) => resolveQuestion(question, answers)}
+            onSkip={() => resolveQuestion(question, null)}
+          />
         </div>
       )}
       <form className={styles.form} onSubmit={send}>
