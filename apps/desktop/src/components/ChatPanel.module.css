@@ -86,11 +86,11 @@
 }
 
 .message {
-  white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
 .user {
+  white-space: pre-wrap;
   align-self: flex-end;
   max-width: 85%;
   padding: 10px 14px;

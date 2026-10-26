@@ -20,7 +20,7 @@ use tauri::{AppHandle, EventId, Listener, Manager};
 use tokio::net::TcpListener;
 
 use crate::commands::{
-    self, audio, brain, dashboard, data, files, meetings, modules, pty, recording, settings,
+    self, audio, brain, dashboard, data, files, links, meetings, modules, pty, recording, settings,
     templates, updater,
 };
 use crate::AppState;
@@ -95,6 +95,9 @@ macro_rules! bridge_commands {
     (@call app_state $app:ident, $args:ident, $command:path, ($($param:ident),*)) => {
         encode($command($app.clone(), $app.state::<AppState>(), $(arg(&$args, stringify!($param))?),*).await)
     };
+    (@call app $app:ident, $args:ident, $command:path, ($($param:ident),*)) => {
+        encode($command($app.clone(), $(arg(&$args, stringify!($param))?),*).await)
+    };
     (@call stateless $app:ident, $args:ident, $command:path, ($($param:ident),*)) => {
         encode($command($(arg(&$args, stringify!($param))?),*).await)
     };
@@ -166,6 +169,7 @@ bridge_commands! {
     state modules::module_disable => (id),
     state modules::module_delete_model => (id),
     app_state meetings::open_meeting => (item_id),
+    app links::open_external_url => (url),
     state recording::recording_start => (input),
     state recording::recording_stop => (id),
     state recording::recording_active => (),

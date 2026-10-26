@@ -229,6 +229,7 @@ pub fn run() {
             commands::modules::module_disable,
             commands::modules::module_delete_model,
             commands::meetings::open_meeting,
+            commands::links::open_external_url,
             commands::recording::recording_start,
             commands::recording::recording_stop,
             commands::recording::recording_active,

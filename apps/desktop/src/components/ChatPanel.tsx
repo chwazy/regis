@@ -10,6 +10,7 @@ import { ErrorMessage } from './ui/Feedback';
 import { useDictationField } from '../lib/use-dictation';
 import { buildChatTimeline, type ChatItem } from './chat-messages';
 import { DictationButton } from './DictationButton';
+import { Markdown } from './Markdown';
 import styles from './ChatPanel.module.css';
 import controls from './ui/controls.module.css';
 
@@ -48,7 +49,7 @@ export function ChatTranscriptItems({ items }: { items: ChatItem[] }) {
         key={item.key}
         className={`${styles.message} ${item.message.role === 'user' ? styles.user : styles.assistant}`}
       >
-        {item.message.text}
+        {item.message.role === 'user' ? item.message.text : <Markdown text={item.message.text} />}
       </li>
     ) : (
       <li key={item.key} className={styles.subJobItem}>

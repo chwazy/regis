@@ -3,6 +3,7 @@ pub mod brain;
 pub mod dashboard;
 pub mod data;
 pub mod files;
+pub mod links;
 pub mod meetings;
 pub mod modules;
 pub mod pty;
