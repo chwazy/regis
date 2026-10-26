@@ -6,6 +6,7 @@ mod paths;
 mod pty;
 mod tauri_events;
 
+use std::ffi::OsString;
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -38,16 +39,28 @@ pub struct AppState {
 const ODOO_MCP_BIN_ENV: &str = "REGIS_ODOO_MCP_BIN";
 const ODOO_MCP_ENTRY_ENV: &str = "REGIS_ODOO_MCP_ENTRY";
 
+fn path_without_cargo_build_dirs() -> OsString {
+    let current = std::env::var_os("PATH").unwrap_or_default();
+    let target_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("target");
+    // `cargo run` préfixe le PATH des dossiers de build natifs (whisper) : au-delà de 8191
+    // caractères, cmd.exe ne résout plus rien et les .cmd lancés par le sidecar échouent.
+    let kept = std::env::split_paths(&current).filter(|dir| !dir.starts_with(&target_dir));
+    std::env::join_paths(kept).unwrap_or(current)
+}
+
 fn sidecar_launch_spec() -> LaunchSpec {
     if cfg!(debug_assertions) {
         let repo_root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
         return LaunchSpec {
             program: "node".into(),
             args: vec![repo_root.join("sidecar/dist/index.js").into_os_string()],
-            env: vec![(
-                ODOO_MCP_ENTRY_ENV.into(),
-                repo_root.join("sidecar/dist/odoo-mcp.js").into_os_string(),
-            )],
+            env: vec![
+                (
+                    ODOO_MCP_ENTRY_ENV.into(),
+                    repo_root.join("sidecar/dist/odoo-mcp.js").into_os_string(),
+                ),
+                ("PATH".into(), path_without_cargo_build_dirs()),
+            ],
             current_dir: Some(repo_root),
         };
     }
@@ -133,7 +146,7 @@ fn register_pty_host_methods(sidecar: &SidecarClient, pty: Arc<pty::PtyManager>)
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let context = tauri::generate_context!();
-    let args: Vec<std::ffi::OsString> = std::env::args_os().collect();
+    let args: Vec<OsString> = std::env::args_os().collect();
     if regis_core::uninstall::is_uninstall_invocation(&args) {
         regis_core::uninstall::run_cli(&context.config().identifier);
         return;
