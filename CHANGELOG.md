@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/chwazy/regis/compare/v0.2.0...v0.3.0) (2026-10-26)
+
+
+### Features
+
+* second brain writes, custom instructions and a richer chat ([#20](https://github.com/chwazy/regis/issues/20)) ([0b3ebe6](https://github.com/chwazy/regis/commit/0b3ebe68f6c94130e171b5a0bcc3bfcbe1c6d858))
+* update the app automatically from GitHub releases ([#18](https://github.com/chwazy/regis/issues/18)) ([cf01705](https://github.com/chwazy/regis/commit/cf017058c0919694b9c2ba178bb0a8461b028982))
+
 ## [0.2.0](https://github.com/chwazy/regis/compare/v0.1.0...v0.2.0) (2026-10-25)
 
 
