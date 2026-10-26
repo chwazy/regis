@@ -1,7 +1,7 @@
 {
   "name": "@regis/sidecar",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "scripts": {
     "build:dev": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node22 --sourcemap --outfile=dist/index.js --banner:js=\"import { createRequire as __regisCreateRequire } from 'node:module'; const require = __regisCreateRequire(import.meta.url);\" && esbuild src/connectors/odoo-mcp/main.ts --bundle --platform=node --format=esm --target=node22 --sourcemap --outfile=dist/odoo-mcp.js --banner:js=\"import { createRequire as __regisCreateRequire } from 'node:module'; const require = __regisCreateRequire(import.meta.url);\"",
